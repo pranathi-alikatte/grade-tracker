@@ -520,6 +520,13 @@ function runStateMigrations() {
             state.subjectsYear3.push({ id: 'y3_art_y2', name: 'Arts Visuels / Musique (Y2)', role: 'art_y2', target: 4.0, evaluationMode: 'locked', grades: { sem1: [], sem2: [] } });
         }
     }
+
+    // Sync the Year 3 Art name from Year 2 choice
+    const y3Art = state.subjectsYear3.find(s => s.role === 'art_y2');
+    const y2Art = state.subjectsYear2.find(s => s.role === 'art');
+    if (y2Art && y3Art) {
+        y3Art.name = `${y2Art.name} (Y2)`;
+    }
 }
 
 function loadState() {
@@ -1663,6 +1670,15 @@ subjectsContainer.addEventListener('click', (e) => {
     if (toggleBtn) {
         const lang = toggleBtn.getAttribute('data-lang');
         subject.name = lang;
+        
+        // If we are changing Year 2 Art, also update Year 3 Art Card name!
+        if (subject.role === 'art' && state.currentYear === 2) {
+            const y3Art = state.subjectsYear3.find(s => s.role === 'art_y2');
+            if (y3Art) {
+                y3Art.name = `${lang} (Y2)`;
+            }
+        }
+        
         saveState();
         renderSubjects();
         updateDashboard();
