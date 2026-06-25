@@ -969,3 +969,47 @@ body {
     border-radius: 50%;
     display: inline-block;
 }
+
+/* Interactive SVG Comparison Chart */
+#multi-subject-svg .graph-line-group {
+    transition: opacity var(--transition-normal);
+    opacity: 0.8;
+}
+
+/* Dim all lines when chart is hovered or has js highlight active */
+#multi-subject-svg:hover .graph-line-group,
+#multi-subject-svg.has-highlight .graph-line-group {
+    opacity: 0.2;
+}
+
+/* Bring hovered or programmatically highlighted line to full focus */
+#multi-subject-svg .graph-line-group:hover,
+#multi-subject-svg .graph-line-group.highlighted {
+    opacity: 1;
+}
+
+#multi-subject-svg .graph-line-group path {
+    transition: stroke-width var(--transition-fast);
+}
+
+#multi-subject-svg .graph-line-group:hover path,
+#multi-subject-svg .graph-line-group.highlighted path {
+    stroke-width: 4px;
+}
+
+/* Show grade numbers only on hover / focus */
+#multi-subject-svg .graph-line-group .node-text {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-fast);
+}
+
+#multi-subject-svg .graph-line-group:hover .node-text,
+#multi-subject-svg .graph-line-group.highlighted .node-text {
+    opacity: 1;
+}
+
+.btn-chart-control:hover {
+    text-decoration: none !important;
+    opacity: 0.8;
+}

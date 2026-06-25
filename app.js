@@ -1055,16 +1055,23 @@ function renderMultiSubjectGraph() {
         sub.color = subjectColors[idx % subjectColors.length];
     });
 
-    // Initialize filter set if not present
+    // Initialize filter set if not present (By default, only show the core subjects to keep the graph clean)
     if (!activeSubjectFilters) {
         activeSubjectFilters = new Set();
-        // By default, enable all subjects
-        allSubjects.forEach(sub => activeSubjectFilters.add(sub.key));
+        const coreRoles = ['math', 'french', 'os', 'l2', 'l3'];
+        allSubjects.forEach(sub => {
+            if (coreRoles.includes(sub.role)) {
+                activeSubjectFilters.add(sub.key);
+            }
+        });
     }
 
     const filtersHTML = `
-        <div style="font-size: 0.8rem; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 0.75rem; text-align: center;">
-            Sélectionnez les branches à afficher :
+        <div style="font-size: 0.8rem; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 0.75rem; text-align: center; display: flex; justify-content: center; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <span>Sélectionnez les branches à afficher :</span>
+            <button type="button" class="btn-chart-control" id="btn-chart-all" style="background: none; border: none; color: var(--color-primary); font-size: 0.75rem; cursor: pointer; text-decoration: underline; font-weight: 600;">Tout afficher</button>
+            <span style="color: var(--color-border-subtle); font-size: 0.75rem;">|</span>
+            <button type="button" class="btn-chart-control" id="btn-chart-none" style="background: none; border: none; color: var(--color-primary); font-size: 0.75rem; cursor: pointer; text-decoration: underline; font-weight: 600;">Effacer</button>
         </div>
         <div class="chart-filters" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; justify-content: center; width: 100%;">
             ${allSubjects.map(sub => {
@@ -1087,8 +1094,7 @@ function renderMultiSubjectGraph() {
 
     const thresholdY = mapY(4.0);
 
-    let pathsHTML = '';
-    let markersHTML = '';
+    let graphGroupsHTML = '';
     let hasAnyDataToPlot = false;
 
     allSubjects.forEach(sub => {
@@ -1103,25 +1109,31 @@ function renderMultiSubjectGraph() {
             }
         });
 
+        if (points.length === 0) return;
+
+        let pathHTML = '';
         if (points.length > 1) {
             const pathData = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
-            pathsHTML += `<path d="${pathData}" fill="none" stroke="${sub.color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />`;
+            pathHTML = `<path d="${pathData}" fill="none" stroke="${sub.color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />`;
         }
 
-        points.forEach(p => {
-            markersHTML += `
-                <g>
-                    <circle cx="${p.x}" cy="${p.y}" r="5" fill="#0f172a" stroke="${sub.color}" stroke-width="2" />
-                    <text x="${p.x}" y="${p.y - 8}" text-anchor="middle" font-size="9" font-weight="bold" fill="white">${p.val.toFixed(1)}</text>
-                </g>
-            `;
-        });
+        let markersHTML = points.map(p => `
+            <circle cx="${p.x}" cy="${p.y}" r="5" fill="#0f172a" stroke="${sub.color}" stroke-width="2" />
+            <text class="node-text" x="${p.x}" y="${p.y - 10}" text-anchor="middle" font-size="9.5" font-weight="bold" fill="white" stroke="#0f172a" stroke-width="3" paint-order="stroke fill">${p.val.toFixed(1)}</text>
+        `).join('');
+
+        graphGroupsHTML += `
+            <g class="graph-line-group" data-key="${sub.key}">
+                ${pathHTML}
+                ${markersHTML}
+            </g>
+        `;
     });
 
     let svgHTML = '';
     if (hasAnyDataToPlot) {
         svgHTML = `
-            <svg viewBox="0 0 600 220" width="100%" height="220" style="overflow: visible;">
+            <svg id="multi-subject-svg" viewBox="0 0 600 220" width="100%" height="220" style="overflow: visible; cursor: crosshair;">
                 <!-- Grid horizontal lines -->
                 <line x1="50" y1="${mapY(6.0)}" x2="550" y2="${mapY(6.0)}" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
                 <line x1="50" y1="${mapY(5.0)}" x2="550" y2="${mapY(5.0)}" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
@@ -1142,9 +1154,8 @@ function renderMultiSubjectGraph() {
                 <line x1="300" y1="20" x2="300" y2="190" stroke="rgba(255,255,255,0.05)" stroke-width="1" />
                 <line x1="500" y1="20" x2="500" y2="190" stroke="rgba(255,255,255,0.05)" stroke-width="1" />
 
-                <!-- Tracked paths and circles -->
-                ${pathsHTML}
-                ${markersHTML}
+                <!-- Grouped lines and circles -->
+                ${graphGroupsHTML}
             </svg>
         `;
     } else {
@@ -1167,6 +1178,45 @@ function renderMultiSubjectGraph() {
                 activeSubjectFilters.add(key);
             }
             renderMultiSubjectGraph();
+        });
+    });
+
+    // Attach click listeners for control buttons (all/none)
+    const btnAll = wrapper.querySelector('#btn-chart-all');
+    const btnNone = wrapper.querySelector('#btn-chart-none');
+    if (btnAll) {
+        btnAll.addEventListener('click', () => {
+            allSubjects.forEach(sub => activeSubjectFilters.add(sub.key));
+            renderMultiSubjectGraph();
+        });
+    }
+    if (btnNone) {
+        btnNone.addEventListener('click', () => {
+            activeSubjectFilters.clear();
+            renderMultiSubjectGraph();
+        });
+    }
+
+    // Attach hover highlight listeners to filter pills
+    wrapper.querySelectorAll('.filter-pill').forEach(btn => {
+        const key = btn.getAttribute('data-key');
+        
+        btn.addEventListener('mouseover', () => {
+            const svg = wrapper.querySelector('#multi-subject-svg');
+            if (svg) {
+                svg.classList.add('has-highlight');
+                const grp = svg.querySelector(`.graph-line-group[data-key="${key}"]`);
+                if (grp) grp.classList.add('highlighted');
+            }
+        });
+
+        btn.addEventListener('mouseout', () => {
+            const svg = wrapper.querySelector('#multi-subject-svg');
+            if (svg) {
+                svg.classList.remove('has-highlight');
+                const grp = svg.querySelector(`.graph-line-group[data-key="${key}"]`);
+                if (grp) grp.classList.remove('highlighted');
+            }
         });
     });
 }
