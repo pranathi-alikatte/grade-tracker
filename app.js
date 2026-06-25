@@ -1000,6 +1000,7 @@ function getAllUniqueSubjects() {
                 unique.push({
                     key: key,
                     label: label,
+                    name: label,
                     role: sub.role
                 });
             }
@@ -1561,7 +1562,8 @@ function renderSubjects() {
 }
 
 function escapeHTML(str) {
-    return str.replace(/[&<>'"]/g, 
+    if (str === null || str === undefined) return '';
+    return String(str).replace(/[&<>'"]/g, 
         tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
     );
 }
