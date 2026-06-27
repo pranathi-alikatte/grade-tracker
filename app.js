@@ -865,7 +865,7 @@ function updateDashboard() {
         promoSubtitle.textContent = "Saisissez des notes pour voir votre statut de promotion.";
         promoStatusBadge.style.backgroundColor = 'rgba(255,255,255,0.1)';
         promoStatusBadge.style.color = '#fff';
-        promoStatusBadge.innerHTML = '<span style="font-size:1.1rem;">⏳</span>';
+        promoStatusBadge.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
         
         statInsuffisances.textContent = '0';
         statDeficit.textContent = '0';
@@ -891,7 +891,7 @@ function updateDashboard() {
 
     // Status styling
     if (results.isPromoted) {
-        promoTitle.textContent = "En route pour réussir l'année 🎉";
+        promoTitle.textContent = "Promotion garantie";
         promoStatusBadge.style.backgroundColor = '#10b981'; // Green circle
         promoStatusBadge.style.color = '#fff';
         promoStatusBadge.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
@@ -914,11 +914,11 @@ function updateDashboard() {
         }
         
         const reasonsStr = reasons.length > 0 ? ` (${reasons.join(', ')})` : '';
-        promoTitle.textContent = `Promotion insuffisante${reasonsStr} ⚠️`;
+        promoTitle.textContent = `Promotion insuffisante${reasonsStr}`;
         
         promoStatusBadge.style.backgroundColor = '#ef4444'; // Red circle
         promoStatusBadge.style.color = '#fff';
-        promoStatusBadge.innerHTML = '<span style="font-size: 1.1rem; font-weight: bold;">!</span>';
+        promoStatusBadge.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
     }
 
     // Update Bilan lists
@@ -1619,11 +1619,11 @@ function renderSubjects() {
         if (avgRaw !== null) {
             const isTargetMet = avgRaw >= subject.target;
             if (isTargetMet) {
-                targetStatusHTML = '<span class="subject-status">Objectif atteint ✅</span>';
+                targetStatusHTML = '<span class="subject-status" style="display:inline-flex; align-items:center; gap:0.25rem;"><svg class="status-icon success" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Objectif atteint</span>';
             } else if (avgRounded === 4.0 && subject.target === 4.0) {
-                targetStatusHTML = '<span class="subject-status warning">Objectif atteint (limite) ⚠️</span>';
+                targetStatusHTML = '<span class="subject-status warning" style="display:inline-flex; align-items:center; gap:0.25rem;"><svg class="status-icon warning" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>Objectif atteint (limite)</span>';
             } else {
-                targetStatusHTML = '<span class="subject-status not-reached">Objectif non atteint ❌</span>';
+                targetStatusHTML = '<span class="subject-status not-reached" style="display:inline-flex; align-items:center; gap:0.25rem;"><svg class="status-icon danger" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>Objectif non atteint</span>';
             }
         } else {
             targetStatusHTML = '<span class="subject-status neutral">Aucune note pour l\'instant.</span>';
@@ -1638,9 +1638,9 @@ function renderSubjects() {
             if (list.length === 0) return '<span style="font-size:0.75rem; color:var(--color-text-muted); font-style:italic;">—</span>';
             return list.map(g => {
                 const statusClass = getStatusClass(g.value);
-                const commentIndicator = g.comment ? '💬' : '';
-                const photoIndicator = g.hasPhoto ? '📷' : '';
-                const indicators = (commentIndicator || photoIndicator) ? `<span style="font-size:0.6rem; margin-left:0.2rem; opacity:0.85; letter-spacing:-1px;">${commentIndicator}${photoIndicator}</span>` : '';
+                const commentIndicator = g.comment ? '<svg class="grade-indicator-icon" style="margin-left:2px;" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>' : '';
+                const photoIndicator = g.hasPhoto ? '<svg class="grade-indicator-icon" style="margin-left:2px;" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>' : '';
+                const indicators = (commentIndicator || photoIndicator) ? `<span style="display:inline-flex; align-items:center; vertical-align:middle; margin-left:0.15rem; gap:1px; opacity:0.85;">${commentIndicator}${photoIndicator}</span>` : '';
                 return `
                     <div class="grade-pill ${statusClass}" data-grade-id="${g.id}">
                         <span>${g.value.toFixed(1)}</span>${indicators}

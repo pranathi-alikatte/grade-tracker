@@ -691,7 +691,10 @@ body {
     cursor: pointer;
     text-align: center;
     position: relative;
-    transition: all var(--transition-fast);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .chip-btn:hover {
@@ -1371,17 +1374,10 @@ body {
 
 /* --- Landing / Start Page Styles --- */
 .landing-page-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 1000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 1.5rem;
-    overflow-y: auto;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem 1.5rem 1.5rem;
 }
 
 .landing-card {
@@ -1857,12 +1853,7 @@ body {
 }
 
 /* Adjust page containers for sticky nav offsets */
-.landing-page-container {
-    padding-top: 1rem !important;
-    height: calc(100vh - 100px) !important;
-}
-
-.app-container, .guide-page-container {
+.landing-page-container, .app-container, .guide-page-container {
     margin-top: 0 !important;
     padding-top: 0.5rem !important;
 }
