@@ -1938,9 +1938,74 @@ const editOcrLoadingStatus = document.getElementById('edit-ocr-loading-status');
 const editGradePhotoPreviewContainer = document.getElementById('edit-grade-photo-preview-container');
 const editGradePhotoPreview = document.getElementById('edit-grade-photo-preview');
 const editRemoveGradePhotoBtn = document.getElementById('edit-remove-grade-photo-btn');
+// Camera scanning states and references
+let addGradeCameraStream = null;
+let editGradeCameraStream = null;
+
+const btnStartCamera = document.getElementById('btn-start-camera');
+const btnCaptureFrame = document.getElementById('btn-capture-frame');
+const btnCloseCamera = document.getElementById('btn-close-camera');
+const cameraScannerView = document.getElementById('camera-scanner-view');
+const cameraStream = document.getElementById('camera-stream');
+
+const editBtnStartCamera = document.getElementById('edit-btn-start-camera');
+const editBtnCaptureFrame = document.getElementById('edit-btn-capture-frame');
+const editBtnCloseCamera = document.getElementById('edit-btn-close-camera');
+const editCameraScannerView = document.getElementById('edit-camera-scanner-view');
+const editCameraStream = document.getElementById('edit-camera-stream');
 
 let selectedSubjectIdForDetails = null;
 let selectedGradeIdForDetails = null;
+
+async function startScanning(videoElement, containerElement, isEditMode) {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+        });
+        
+        videoElement.srcObject = stream;
+        containerElement.style.display = 'block';
+        
+        if (isEditMode) {
+            editGradeCameraStream = stream;
+        } else {
+            addGradeCameraStream = stream;
+        }
+    } catch (err) {
+        console.error("Failed to start camera:", err);
+        alert("Impossible d'accéder à la caméra. Veuillez vérifier les permissions.");
+    }
+}
+
+function stopScanning(isEditMode) {
+    const stream = isEditMode ? editGradeCameraStream : addGradeCameraStream;
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        if (isEditMode) {
+            editGradeCameraStream = null;
+            if (editCameraStream) editCameraStream.srcObject = null;
+            if (editCameraScannerView) editCameraScannerView.style.display = 'none';
+        } else {
+            addGradeCameraStream = null;
+            if (cameraStream) cameraStream.srcObject = null;
+            if (cameraScannerView) cameraScannerView.style.display = 'none';
+        }
+    }
+}
+
+function captureFrame(videoElement, isEditMode) {
+    const canvas = document.createElement('canvas');
+    canvas.width = videoElement.videoWidth || 640;
+    canvas.height = videoElement.videoHeight || 480;
+    
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+    
+    const base64Data = canvas.toDataURL('image/jpeg', 0.85);
+    stopScanning(isEditMode);
+    
+    return base64Data;
+}
 
 function openModal(modal) {
     modal.classList.add('active');
@@ -1966,6 +2031,7 @@ function toggleEditMode(enable) {
 }
 
 function closeDetailsModalAndReset() {
+    stopScanning(true);
     closeModal(gradeDetailsModal);
     toggleEditMode(false);
 }
@@ -1974,12 +2040,21 @@ function closeDetailsModalAndReset() {
 document.getElementById('close-subject-modal').addEventListener('click', () => closeModal(addSubjectModal));
 document.getElementById('cancel-subject-btn').addEventListener('click', () => closeModal(addSubjectModal));
 
-document.getElementById('close-grade-modal').addEventListener('click', () => closeModal(addGradeModal));
-document.getElementById('cancel-grade-btn').addEventListener('click', () => closeModal(addGradeModal));
+document.getElementById('close-grade-modal').addEventListener('click', () => {
+    stopScanning(false);
+    closeModal(addGradeModal);
+});
+document.getElementById('cancel-grade-btn').addEventListener('click', () => {
+    stopScanning(false);
+    closeModal(addGradeModal);
+});
 
 document.getElementById('close-details-modal').addEventListener('click', closeDetailsModalAndReset);
 document.getElementById('close-details-btn').addEventListener('click', closeDetailsModalAndReset);
-document.getElementById('cancel-edit-btn').addEventListener('click', () => toggleEditMode(false));
+document.getElementById('cancel-edit-btn').addEventListener('click', () => {
+    stopScanning(true);
+    toggleEditMode(false);
+});
 
 // Header actions
 document.getElementById('add-subject-btn').addEventListener('click', () => {
@@ -2411,6 +2486,113 @@ document.getElementById('save-edit-btn').addEventListener('click', (e) => {
         proceedSavingEdits();
     }
 });
+
+// --- Camera Scanner Bindings ---
+if (btnStartCamera) {
+    btnStartCamera.addEventListener('click', () => {
+        stopScanning(false);
+        startScanning(cameraStream, cameraScannerView, false);
+    });
+}
+if (btnCloseCamera) {
+    btnCloseCamera.addEventListener('click', () => {
+        stopScanning(false);
+    });
+}
+if (btnCaptureFrame) {
+    btnCaptureFrame.addEventListener('click', () => {
+        if (!cameraStream) return;
+        const capturedData = captureFrame(cameraStream, false);
+        if (capturedData) {
+            currentUploadedPhotoBase64 = capturedData;
+            document.getElementById('grade-photo-preview').src = capturedData;
+            document.getElementById('grade-photo-preview-container').style.display = 'block';
+            
+            // Trigger OCR immediately
+            const ocrStatus = document.getElementById('ocr-loading-status');
+            ocrStatus.style.display = 'flex';
+            currentOcrText = "";
+            isOcrRunning = true;
+            
+            try {
+                if (typeof Tesseract === 'undefined') {
+                    throw new Error("Tesseract library is not loaded.");
+                }
+                Tesseract.recognize(
+                    capturedData,
+                    'fra+eng',
+                    { logger: m => console.log(m) }
+                ).then(({ data: { text } }) => {
+                    currentOcrText = text;
+                    console.log("Add Grade Camera Capture OCR result:", text);
+                }).catch(err => {
+                    console.error("Add Grade Camera Capture OCR error:", err);
+                }).finally(() => {
+                    ocrStatus.style.display = 'none';
+                    isOcrRunning = false;
+                });
+            } catch (err) {
+                console.warn("OCR failed to initialize:", err);
+                ocrStatus.style.display = 'none';
+                isOcrRunning = false;
+            }
+        }
+    });
+}
+
+// Edit Grade Camera Bindings
+if (editBtnStartCamera) {
+    editBtnStartCamera.addEventListener('click', () => {
+        stopScanning(true);
+        startScanning(editCameraStream, editCameraScannerView, true);
+    });
+}
+if (editBtnCloseCamera) {
+    editBtnCloseCamera.addEventListener('click', () => {
+        stopScanning(true);
+    });
+}
+if (editBtnCaptureFrame) {
+    editBtnCaptureFrame.addEventListener('click', () => {
+        if (!editCameraStream) return;
+        const capturedData = captureFrame(editCameraStream, true);
+        if (capturedData) {
+            editUploadedPhotoBase64 = capturedData;
+            editGradePhotoPreview.src = capturedData;
+            editGradePhotoPreviewContainer.style.display = 'block';
+            editPhotoDeleted = false;
+            
+            // Trigger OCR immediately
+            const ocrStatus = editOcrLoadingStatus;
+            ocrStatus.style.display = 'flex';
+            editOcrText = "";
+            isEditOcrRunning = true;
+            
+            try {
+                if (typeof Tesseract === 'undefined') {
+                    throw new Error("Tesseract library is not loaded.");
+                }
+                Tesseract.recognize(
+                    capturedData,
+                    'fra+eng',
+                    { logger: m => console.log(m) }
+                ).then(({ data: { text } }) => {
+                    editOcrText = text;
+                    console.log("Edit Grade Camera Capture OCR result:", text);
+                }).catch(err => {
+                    console.error("Edit Grade Camera Capture OCR error:", err);
+                }).finally(() => {
+                    ocrStatus.style.display = 'none';
+                    isEditOcrRunning = false;
+                });
+            } catch (err) {
+                console.warn("OCR failed to initialize:", err);
+                ocrStatus.style.display = 'none';
+                isEditOcrRunning = false;
+            }
+        }
+    });
+}
 
 // --- Add Grade Photo & OCR Bindings ---
 document.getElementById('grade-photo').addEventListener('change', (e) => {
