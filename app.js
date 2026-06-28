@@ -1314,9 +1314,9 @@ function renderMultiSubjectGraph() {
     const filtersHTML = `
         <div style="font-size: 0.8rem; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 0.75rem; text-align: center; display: flex; justify-content: center; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
             <span>Sélectionnez les branches à afficher :</span>
-            <button type="button" class="btn-chart-control" id="btn-chart-all" style="background: none; border: none; color: var(--color-primary); font-size: 0.75rem; cursor: pointer; text-decoration: underline; font-weight: 600;">Tout afficher</button>
+            <button type="button" class="btn-chart-control" id="btn-chart-all" style="background: none; border: none; color: var(--color-primary); font-size: 0.75rem; cursor: pointer; text-decoration: underline; font-weight: 600; min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; padding: 0 8px;">Tout afficher</button>
             <span style="color: var(--color-border-subtle); font-size: 0.75rem;">|</span>
-            <button type="button" class="btn-chart-control" id="btn-chart-none" style="background: none; border: none; color: var(--color-primary); font-size: 0.75rem; cursor: pointer; text-decoration: underline; font-weight: 600;">Effacer</button>
+            <button type="button" class="btn-chart-control" id="btn-chart-none" style="background: none; border: none; color: var(--color-primary); font-size: 0.75rem; cursor: pointer; text-decoration: underline; font-weight: 600; min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; padding: 0 8px;">Effacer</button>
         </div>
         <div class="chart-filters" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; justify-content: center; width: 100%;">
             ${allSubjects.map(sub => {
@@ -1837,7 +1837,7 @@ function renderSubjects() {
         }
 
         const isStandardSubject = subject.id.startsWith('y1_') || subject.id.startsWith('y2_') || subject.id.startsWith('y3_');
-        const deleteBtnHTML = isStandardSubject ? '' : `<button class="btn-delete-subject" title="Supprimer la branche">&times;</button>`;
+        const deleteBtnHTML = isStandardSubject ? '' : `<button class="btn-delete-subject" title="Supprimer la branche" aria-label="Supprimer le sujet">&times;</button>`;
         const drawerHTML = (state.currentYear === 3 && sem === 'annual') ? `<div class="sub-evo-drawer"></div>` : '';
 
         let simulatorHTML = '';
@@ -2012,9 +2012,14 @@ function captureFrame(videoElement, isEditMode) {
 
 function openModal(modal) {
     modal.classList.add('active');
+    document.body.classList.add('modal-open');
 }
 function closeModal(modal) {
     modal.classList.remove('active');
+    const activeModals = document.querySelectorAll('.modal-backdrop.active');
+    if (activeModals.length === 0) {
+        document.body.classList.remove('modal-open');
+    }
 }
 
 function toggleEditMode(enable) {
