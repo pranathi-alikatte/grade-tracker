@@ -3063,7 +3063,7 @@ function switchView(viewId) {
     // Show selected view
     const selectedView = document.getElementById(viewId);
     if (selectedView) {
-        if (viewId === 'view-landing') {
+        if (viewId === 'view-landing' || viewId === 'view-guide') {
             selectedView.style.display = 'flex';
         } else {
             selectedView.style.display = 'block';
