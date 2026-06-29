@@ -1181,7 +1181,7 @@ function updateTabVisibility() {
     const isYear4 = (state.currentYear === 4);
     
     const evoContainer = document.getElementById('evolution-slide-container');
-    const semTabs = document.querySelector('.semester-tabs-container');
+    const semTabs = document.querySelector('.semester-sidebar') || document.querySelector('.semester-tabs-container');
     const subjectsSec = document.querySelector('.subjects-section');
     const bilanSec = document.querySelector('.bilan-section');
     const addSubBtn = document.getElementById('add-subject-btn');
