@@ -777,7 +777,7 @@ function loadState() {
             if (!state.currentSemester) state.currentSemester = 'sem1';
             if (!state.theme) state.theme = 'navy';
             if (state.hasSeenOnboarding === undefined) state.hasSeenOnboarding = false;
-            if (!state.promoViewMode) state.promoViewMode = 'grid';
+            if (!state.promoViewMode) state.promoViewMode = 'visual';
             
             runStateMigrations();
             
@@ -805,7 +805,7 @@ function resetStateToDefault() {
         subjectsYear3: JSON.parse(JSON.stringify(defaultSubjectsYear3)),
         theme: 'navy',
         hasSeenOnboarding: false,
-        promoViewMode: 'grid'
+        promoViewMode: 'visual'
     };
     saveState();
     applyTheme();
@@ -1956,7 +1956,7 @@ function renderSubjects() {
     const currentSubjects = (state.currentYear === 3) ? state.subjectsYear3 : (state.currentYear === 2) ? state.subjectsYear2 : state.subjectsYear1;
     const sem = state.currentSemester;
 
-    if (state.currentYear === 1) {
+    if (state.promoViewMode === 'visual') {
         subjectsContainer.classList.add('gemstone-mode');
         
         currentSubjects.forEach((subject, index) => {
@@ -3107,6 +3107,17 @@ function init() {
             state.theme = e.target.value;
             saveState();
             applyTheme();
+        });
+    }
+    
+    const interfaceSelector = document.getElementById('interface-selector');
+    if (interfaceSelector) {
+        interfaceSelector.value = state.promoViewMode || 'visual';
+        interfaceSelector.addEventListener('change', (e) => {
+            state.promoViewMode = e.target.value;
+            saveState();
+            renderSubjects();
+            updateDashboard();
         });
     }
     applyTheme();

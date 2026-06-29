@@ -131,6 +131,10 @@
                     </div>
                 </div>
                 <div class="header-actions">
+                    <select id="interface-selector" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8rem; border-radius: var(--radius-full); cursor: pointer; margin-right: 0.5rem;" title="Changer le style d'affichage">
+                        <option value="visual">Mode Gemmes</option>
+                        <option value="grid">Mode Classique</option>
+                    </select>
                     <select id="theme-selector" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8rem; border-radius: var(--radius-full); cursor: pointer;" title="Changer le thème de couleur">
                         <option value="navy">Navy</option>
                         <option value="pink">Rose</option>
@@ -180,89 +184,78 @@
             </section>
         </div>
 
-        <!-- Layout with Sidebars -->
-        <div class="dashboard-layout-with-sidebars">
-            <!-- Left Sidebar: Year Selection -->
-            <aside class="sidebar-aside year-sidebar">
-                <h3 class="sidebar-title">Année</h3>
-                <div class="year-tabs-container">
-                    <div class="lang-toggle-container" id="year-selector">
-                        <button type="button" class="lang-toggle-btn active" data-year="1">1ère année</button>
-                        <button type="button" class="lang-toggle-btn" data-year="2">2ème année</button>
-                        <button type="button" class="lang-toggle-btn" data-year="3">3ème année</button>
-                        <button type="button" class="lang-toggle-btn" data-year="4">Évolution (3 ans)</button>
+        <!-- Year Selection Tabs (Grouped directly above Semester Tabs, closer to top navigation) -->
+        <div class="year-tabs-container" style="display: flex; gap: 0.5rem; justify-content: center; width: 100%; margin-top: 1rem;">
+            <div class="lang-toggle-container" id="year-selector" style="margin: 0; padding: 2px; width: 100%; display: flex; max-width: 600px; justify-content: space-between;">
+                <button type="button" class="lang-toggle-btn active" data-year="1" style="flex: 1; text-align: center;">1ère année</button>
+                <button type="button" class="lang-toggle-btn" data-year="2" style="flex: 1; text-align: center;">2ème année</button>
+                <button type="button" class="lang-toggle-btn" data-year="3" style="flex: 1; text-align: center;">3ème année</button>
+                <button type="button" class="lang-toggle-btn" data-year="4" style="flex: 1; text-align: center;">Évolution (3 ans)</button>
+            </div>
+        </div>
+
+        <!-- Semester Selection Tabs -->
+        <div class="semester-tabs-container" style="margin-top: 0.5rem;">
+            <button class="semester-tab active" data-sem="sem1">1er Semestre</button>
+            <button class="semester-tab" data-sem="sem2">2ème Semestre</button>
+            <button class="semester-tab" data-sem="annual">Annuel (Combiné)</button>
+        </div>
+
+        <!-- Evolution Slide Container -->
+        <section id="evolution-slide-container" style="display: none; flex-direction: column; gap: 1.5rem; width: 100%;"></section>
+
+        <!-- Subjects Container -->
+        <main class="subjects-section">
+            <div class="subjects-list" id="subjects-container">
+                <!-- Subject cards will be dynamically injected here -->
+            </div>
+        </main>
+
+        <!-- Bilan par groupe Section -->
+        <section class="bilan-section">
+            <h2 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 1rem; color: white; border-bottom: 1px solid var(--color-border-subtle); padding-bottom: 0.5rem;">Bilan par groupe</h2>
+            
+            <div class="bilan-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <!-- Groupe 1 Card -->
+                <div class="subject-card" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-border-subtle); padding-bottom: 0.5rem; gap: 0.75rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div class="bilan-3d-icon icon-g1">
+                                <div class="collar"></div>
+                                <div class="pebble"></div>
+                            </div>
+                            <h3 style="font-size: 1.15rem; font-weight: 800; color: white; margin: 0;">Groupe 1</h3>
+                        </div>
+                        <span id="g1-points-text" style="font-size: 0.85rem; font-weight: 700; color: var(--color-primary);">Min 16 / — · Max 24</span>
                     </div>
+                    <ul class="bilan-list" id="g1-list" style="list-style: none; font-size: 0.9rem; color: var(--color-text-secondary); display: flex; flex-direction: column; gap: 0.4rem;">
+                        <!-- Injected branches -->
+                    </ul>
                 </div>
-            </aside>
 
-            <!-- Central Content Area (Grades + Bilan) -->
-            <div class="main-content-area">
-                <!-- Evolution Slide Container -->
-                <section id="evolution-slide-container" style="display: none; flex-direction: column; gap: 1.5rem; width: 100%;"></section>
-
-                <!-- Subjects Container -->
-                <main class="subjects-section">
-                    <div class="subjects-list" id="subjects-container">
-                        <!-- Subject cards will be dynamically injected here -->
-                    </div>
-                </main>
-
-                <!-- Bilan par groupe Section -->
-                <section class="bilan-section">
-                    <h2 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 1rem; color: white; border-bottom: 1px solid var(--color-border-subtle); padding-bottom: 0.5rem;">Bilan par groupe</h2>
-                    
-                    <div class="bilan-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                        <!-- Groupe 1 Card -->
-                        <div class="subject-card" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-border-subtle); padding-bottom: 0.5rem; gap: 0.75rem;">
-                                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <div class="bilan-3d-icon icon-g1">
-                                        <div class="collar"></div>
-                                        <div class="pebble"></div>
-                                    </div>
-                                    <h3 style="font-size: 1.15rem; font-weight: 800; color: white; margin: 0;">Groupe 1</h3>
-                                </div>
-                                <span id="g1-points-text" style="font-size: 0.85rem; font-weight: 700; color: var(--color-primary);">Min 16 / — · Max 24</span>
+                <!-- Groupe 2 Card -->
+                <div class="subject-card" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-border-subtle); padding-bottom: 0.5rem; gap: 0.75rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <div class="bilan-3d-icon icon-g2">
+                                <div class="ring ring-1"></div>
+                                <div class="ring ring-2"></div>
+                                <div class="ring ring-3"></div>
                             </div>
-                            <ul class="bilan-list" id="g1-list" style="list-style: none; font-size: 0.9rem; color: var(--color-text-secondary); display: flex; flex-direction: column; gap: 0.4rem;">
-                                <!-- Injected branches -->
-                            </ul>
+                            <h3 style="font-size: 1.15rem; font-weight: 800; color: white; margin: 0;">Groupe 2</h3>
                         </div>
-
-                        <!-- Groupe 2 Card -->
-                        <div class="subject-card" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-border-subtle); padding-bottom: 0.5rem; gap: 0.75rem;">
-                                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <div class="bilan-3d-icon icon-g2">
-                                        <div class="ring ring-1"></div>
-                                        <div class="ring ring-2"></div>
-                                        <div class="ring ring-3"></div>
-                                    </div>
-                                    <h3 style="font-size: 1.15rem; font-weight: 800; color: white; margin: 0;">Groupe 2</h3>
-                                </div>
-                                <span id="g2-points-text" style="font-size: 0.85rem; font-weight: 700; color: var(--color-primary);">Min 4 / — · Max 6</span>
-                            </div>
-                            <ul class="bilan-list" id="g2-list" style="list-style: none; font-size: 0.9rem; color: var(--color-text-secondary); display: flex; flex-direction: column; gap: 0.4rem;">
-                                <!-- Injected branches -->
-                            </ul>
-                        </div>
+                        <span id="g2-points-text" style="font-size: 0.85rem; font-weight: 700; color: var(--color-primary);">Min 4 / — · Max 6</span>
                     </div>
-
-                    <p style="font-size: 0.75rem; color: var(--color-text-secondary); margin-top: 1rem; font-style: italic; opacity: 0.8;">
-                        * Points = somme des moyennes arrondies au demi-point. Le minimum (4 par branche) correspond à la ligne de réussite, le maximum à un 6 partout.
-                    </p>
-                </section>
+                    <ul class="bilan-list" id="g2-list" style="list-style: none; font-size: 0.9rem; color: var(--color-text-secondary); display: flex; flex-direction: column; gap: 0.4rem;">
+                        <!-- Injected branches -->
+                    </ul>
+                </div>
             </div>
 
-            <!-- Right Sidebar: Semester Selection -->
-            <aside class="sidebar-aside semester-sidebar">
-                <h3 class="sidebar-title">Semestre</h3>
-                <div class="semester-tabs-container">
-                    <button class="semester-tab active" data-sem="sem1">1er Semestre</button>
-                    <button class="semester-tab" data-sem="sem2">2ème Semestre</button>
-                    <button class="semester-tab" data-sem="annual">Annuel (Combiné)</button>
-                </div>
-            </aside>
+            <p style="font-size: 0.75rem; color: var(--color-text-secondary); margin-top: 1rem; font-style: italic; opacity: 0.8;">
+                * Points = somme des moyennes arrondies au demi-point. Le minimum (4 par branche) correspond à la ligne de réussite, le maximum à un 6 partout.
+            </p>
+        </section>
         </div>
     </div>
 
