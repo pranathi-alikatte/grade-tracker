@@ -54,11 +54,8 @@
 }
 
 body {
-    background-image: url('background.png') !important;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+    background-color: transparent !important;
+    background-image: none !important;
     color: var(--color-text-primary);
     font-family: var(--font-family-sans);
     line-height: 1.5;
@@ -2410,4 +2407,41 @@ body {
 }
 .promo-3d-graphic, .bilan-3d-icon {
     filter: none !important;
+}
+
+/* Background Boxes (Aceternity UI) Styles */
+.background-boxes-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -10;
+    overflow: hidden;
+    background-color: var(--color-bg-base);
+    transition: background-color var(--transition-normal);
+}
+.background-boxes-mask {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: radial-gradient(circle at center, transparent 15%, var(--color-bg-base) 80%);
+    pointer-events: none;
+    transition: background var(--transition-normal);
+}
+.background-boxes-grid {
+    display: grid;
+    width: 200vw;
+    height: 200vh;
+    transform: translate(-25%, -25%) skewY(-8deg) rotate(-4deg);
+    z-index: 0;
+}
+.box-cell {
+    border-right: 1px solid rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    transition: background-color 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.box-cell:hover {
+    background-color: var(--color-primary);
+    transition: background-color 0s;
 }

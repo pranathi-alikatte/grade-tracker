@@ -3090,6 +3090,7 @@ function switchView(viewId) {
 
 function init() {
     loadState();
+    initBackgroundBoxes();
     
     animateCards = true;
     // View Router toggle on startup
@@ -3289,5 +3290,29 @@ setTimeout(() => {
         });
     }
 }, 500);
+
+function initBackgroundBoxes() {
+    const grid = document.getElementById('background-boxes-grid');
+    if (!grid) return;
+    
+    grid.innerHTML = '';
+    
+    const cols = 60;
+    const rows = 40;
+    
+    grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+    
+    const totalCells = cols * rows;
+    const fragment = document.createDocumentFragment();
+    
+    for (let i = 0; i < totalCells; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'box-cell';
+        fragment.appendChild(cell);
+    }
+    
+    grid.appendChild(fragment);
+}
 
 window.onload = init;
