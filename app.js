@@ -852,6 +852,7 @@ const subjectsContainer = document.getElementById('subjects-container');
 const promoTitle = document.getElementById('promo-title');
 const promoSubtitle = document.getElementById('promo-subtitle');
 const promoStatusBadge = document.getElementById('promo-status-badge');
+const promoDashboard = document.getElementById('promo-dashboard');
 
 const statInsuffisances = document.getElementById('stat-insuffisances');
 const statDeficit = document.getElementById('stat-deficit');
@@ -1172,7 +1173,6 @@ function updateTabVisibility() {
     const isYear4 = (state.currentYear === 4);
     
     const evoContainer = document.getElementById('evolution-slide-container');
-    const promoDashboard = document.getElementById('promo-dashboard');
     const semTabs = document.querySelector('.semester-tabs-container');
     const subjectsSec = document.querySelector('.subjects-section');
     const bilanSec = document.querySelector('.bilan-section');
