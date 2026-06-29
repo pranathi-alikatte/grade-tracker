@@ -528,7 +528,7 @@ function updateCardSimulatorBadge(card, subject, sem) {
     }
     
     if (reqGrade > 6.0) {
-        badge.textContent = 'Imp. ❌';
+        badge.textContent = 'Impossible';
         badge.classList.add('impossible');
         badge.title = 'Impossible d\'atteindre l\'objectif avec ce nombre d\'évaluations.';
     } else if (reqGrade <= 1.0) {
@@ -769,6 +769,7 @@ function loadState() {
             if (!state.currentSemester) state.currentSemester = 'sem1';
             if (!state.theme) state.theme = 'navy';
             if (state.hasSeenOnboarding === undefined) state.hasSeenOnboarding = false;
+            if (!state.promoViewMode) state.promoViewMode = 'grid';
             
             runStateMigrations();
             
@@ -795,7 +796,8 @@ function resetStateToDefault() {
         subjectsYear2: JSON.parse(JSON.stringify(defaultSubjectsYear2)),
         subjectsYear3: JSON.parse(JSON.stringify(defaultSubjectsYear3)),
         theme: 'navy',
-        hasSeenOnboarding: false
+        hasSeenOnboarding: false,
+        promoViewMode: 'grid'
     };
     saveState();
     applyTheme();
@@ -806,6 +808,46 @@ function saveState() {
 }
 
 // --- 7. DOM Elements ---
+let activeDetailsSubjectId = null;
+const gemClasses = [
+    'ruby-zoisite',
+    'red-jasper',
+    'ocean-jasper',
+    'rainbow-moonstone',
+    'selenite',
+    'sodalite',
+    'serpentine',
+    'rose-quartz',
+    'labradorite',
+    'picture-jasper',
+    'amazonite'
+];
+
+function getGemClassForSubject(subject, index) {
+    const isStandardSubject = subject.id.startsWith('y1_') || subject.id.startsWith('y2_') || subject.id.startsWith('y3_');
+    if (!isStandardSubject) return 'custom';
+    
+    const roleMapping = {
+        'math': 'ruby-zoisite',
+        'french': 'red-jasper',
+        'os': 'ocean-jasper',
+        'l3': 'rainbow-moonstone',
+        'l2': 'selenite',
+        'art': 'labradorite'
+    };
+    
+    if (roleMapping[subject.role]) return roleMapping[subject.role];
+    
+    const nameLower = subject.name.toLowerCase();
+    if (nameLower.includes('économie') || nameLower.includes('eco')) return 'sodalite';
+    if (nameLower.includes('chimie')) return 'serpentine';
+    if (nameLower.includes('physique')) return 'rose-quartz';
+    if (nameLower.includes('informatique') || nameLower.includes('info')) return 'picture-jasper';
+    if (nameLower.includes('histoire')) return 'amazonite';
+    
+    return gemClasses[index % gemClasses.length];
+}
+
 const subjectsContainer = document.getElementById('subjects-container');
 const promoTitle = document.getElementById('promo-title');
 const promoSubtitle = document.getElementById('promo-subtitle');
@@ -848,78 +890,53 @@ function updateDashboard() {
     const currentSubjects = (state.currentYear === 3) ? state.subjectsYear3 : (state.currentYear === 2) ? state.subjectsYear2 : state.subjectsYear1;
     const results = checkVaudPromotion(currentSubjects, state.currentSemester);
 
-    if (state.currentYear === 3) {
-        if (cardCompensation) cardCompensation.style.display = '';
-        if (promoStatsGrid) promoStatsGrid.classList.remove('three-cols');
-    } else {
-        if (cardCompensation) cardCompensation.style.display = 'none';
-        if (promoStatsGrid) promoStatsGrid.classList.add('three-cols');
-    }
-
     // Update name UI if different
     if (studentNameEl.textContent !== state.studentName) {
         studentNameEl.textContent = state.studentName;
     }
 
     if (results.activeSubjectsCount === 0) {
+        if (promoDashboard) promoDashboard.className = 'promo-dashboard-container status-neutral';
         promoTitle.textContent = "Aucune note saisie";
         promoSubtitle.textContent = "Saisissez des notes pour voir votre statut de promotion.";
-        promoStatusBadge.style.backgroundColor = 'rgba(255,255,255,0.1)';
-        promoStatusBadge.style.color = '#fff';
-        promoStatusBadge.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
-        
-        statInsuffisances.textContent = '0';
-        statDeficit.textContent = '0';
-        statSurplus.textContent = '0';
-        statCompensation.textContent = '0 / 0';
         
         renderEvolutionGraph();
         updateGroupsBilan();
         return;
     }
 
-    // Display counts
-    statInsuffisances.textContent = results.insuffisances;
-    statDeficit.textContent = results.pointsManquants;
-    statSurplus.textContent = results.pointsEnPlus;
-    statCompensation.textContent = `${results.pointsEnPlus} / ${results.requiredCompensation}`;
-
-    // Overall Average display
-    const roundedOverallAvg = results.overallAverage;
-    const branchWord = results.activeSubjectsCount === 1 ? 'branche' : 'branches';
-    const periodLabel = state.currentSemester === 'sem1' ? 'du 1er semestre' : state.currentSemester === 'sem2' ? 'du 2ème semestre' : 'annuelle (combinée)';
-    promoSubtitle.textContent = `Moyenne générale ${roundedOverallAvg.toFixed(2)} sur ${results.activeSubjectsCount} ${branchWord} ${periodLabel}.`;
-
     // Status styling
     if (results.isPromoted) {
+        if (promoDashboard) promoDashboard.className = 'promo-dashboard-container status-promoted';
         promoTitle.textContent = "Promotion garantie";
-        promoStatusBadge.style.backgroundColor = '#10b981'; // Green circle
-        promoStatusBadge.style.color = '#fff';
-        promoStatusBadge.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+        const periodLabel = state.currentSemester === 'sem1' ? 'du 1er semestre' : state.currentSemester === 'sem2' ? 'du 2ème semestre' : 'annuelle (combinée)';
+        promoSubtitle.textContent = `Félicitations, vous remplissez toutes les conditions de promotion avec une moyenne de ${results.overallAverage.toFixed(2)} (${periodLabel}) !`;
     } else {
+        if (promoDashboard) promoDashboard.className = 'promo-dashboard-container status-failing';
+        promoTitle.textContent = "Promotion insuffisante";
+        
         const reasons = [];
         if (results.overallAverage < 4.0) {
-            reasons.push("points Groupe 2 insuffisants");
+            const diff = (results.pointsManquants - results.pointsEnPlus).toFixed(1);
+            reasons.push(`Il vous manque ${diff} point(s) pour atteindre la moyenne de 4.0 dans le Groupe 2 (toutes les disciplines)`);
         }
         if (!results.coreSumPassed) {
-            reasons.push("Groupe 1 < 16 pts");
+            const diff = (16.0 - results.g1Sum).toFixed(1);
+            reasons.push(`Il vous manque ${diff} point(s) pour atteindre les 16.0 points requis dans le Groupe 1 (disciplines fondamentales)`);
         }
         if (results.insuffisances > 4) {
-            reasons.push("> 4 insuffisances");
+            reasons.push(`Vous avez ${results.insuffisances} branches insuffisantes (maximum 4 autorisées)`);
         }
         if (results.pointsManquants > 3.0) {
-            reasons.push("déficit > 3.0 pts");
+            const diff = (results.pointsManquants - 3.0).toFixed(1);
+            reasons.push(`Votre déficit total de branches insuffisantes (${results.pointsManquants.toFixed(1)}) dépasse de ${diff} point(s) la limite autorisée (3.0)`);
         }
         if (results.pointsEnPlus < results.requiredCompensation) {
-            reasons.push("compensation insuffisante");
+            const diff = (results.requiredCompensation - results.pointsEnPlus).toFixed(1);
+            reasons.push(`Il vous manque ${diff} point(s) de compensation (le surplus au-dessus de 4.0 doit combler le double du déficit)`);
         }
         
-        const reasonsStr = reasons.length > 0 ? ` (${reasons.join(', ')})` : '';
-        promoTitle.textContent = `Promotion insuffisante${reasonsStr}`;
-        
-        promoStatusBadge.style.backgroundColor = '#ef4444'; // Red circle
-        promoStatusBadge.style.color = '#fff';
-        promoStatusBadge.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
+        promoSubtitle.innerHTML = reasons.join('<br>');
     }
 
     // Update Bilan lists
@@ -995,13 +1012,18 @@ function updateGroupsBilan() {
         return li;
     };
 
-    g1List.appendChild(createBilanItem('Maths', mathRound));
     g1List.appendChild(createBilanItem('Français', frRound));
+    g1List.appendChild(createBilanItem('Mathématiques', mathRound));
     g1List.appendChild(createBilanItem(os ? os.name : 'Option Spécifique (OS)', osRound));
     
-    // Core languages name adapts based on L2 setting
-    const l2Name = l2 ? l2.name : 'Allemand';
-    g1List.appendChild(createBilanItem(`${l2Name} + Anglais ÷ 2`, l2l3AvgRounded));
+    const l2Name = l2 ? l2.name : 'Langue 2 (L2)';
+    const l3Name = l3 ? l3.name : 'Langue 3 (L3)';
+    g1List.appendChild(createBilanItem(l2Name, l2Data && l2Data.rawAverage !== null ? l2Data.roundedAverage : null));
+    g1List.appendChild(createBilanItem(l3Name, l3Data && l3Data.rawAverage !== null ? l3Data.roundedAverage : null));
+    
+    if (l2l3AvgRounded !== null) {
+        g1List.appendChild(createBilanItem('↳ Moyenne (L2 + L3)', l2l3AvgRounded));
+    }
 
     // --- 2. Compute Group 2 (Toutes les branches) ---
     let g2Sum = 0;
@@ -1025,6 +1047,8 @@ function updateGroupsBilan() {
         g2PointsText.style.color = 'var(--color-avg-passing-text)';
     }
 }
+
+
 
 function findMatchingSubject(subjectList, refSubject) {
     if (!subjectList) return null;
@@ -1195,7 +1219,7 @@ function renderDedicatedEvolutionSlide() {
         <div class="subject-card" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-border-subtle); padding-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
                 <h3 style="font-size: 1.15rem; font-weight: 800; color: white; display: flex; align-items: center; gap: 0.5rem;">
-                    <span>📊 Évolution par Branche</span>
+                    <span>Évolution par Branche</span>
                 </h3>
                 <span style="font-size: 0.8rem; color: var(--color-text-secondary); font-weight: 500;">Branches principales et OS</span>
             </div>
@@ -1581,327 +1605,581 @@ function renderEvolutionGraph() {
     wrapper.innerHTML = svgContent;
 }
 
+function getSubjectCardInnerHTML(subject, sem) {
+    const data = calculateSubjectData(subject, sem);
+    const avgRaw = data.rawAverage;
+    const avgRounded = data.roundedAverage;
+
+    // Circular badge average
+    let badgeHTML = '';
+    if (avgRaw !== null) {
+        const statusClass = getStatusClass(avgRounded);
+        badgeHTML = `
+            <div class="subject-average-badge ${statusClass}">
+                <span class="subject-average-val">${avgRaw.toFixed(2)}</span>
+                <span class="subject-average-lbl">MOYENNE</span>
+            </div>
+        `;
+    } else {
+        badgeHTML = `
+            <div class="subject-average-badge empty">
+                <span class="subject-average-val">—</span>
+                <span class="subject-average-lbl">MOYENNE</span>
+            </div>
+        `;
+    }
+
+    // Target status
+    let targetStatusHTML = '';
+    if (avgRaw !== null) {
+        const isTargetMet = avgRaw >= subject.target;
+        if (isTargetMet) {
+            targetStatusHTML = '<span class="subject-status" style="display:inline-flex; align-items:center; gap:0.25rem;"><svg class="status-icon success" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Objectif atteint</span>';
+        } else if (avgRounded === 4.0 && subject.target === 4.0) {
+            targetStatusHTML = '<span class="subject-status warning" style="display:inline-flex; align-items:center; gap:0.25rem;"><svg class="status-icon warning" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>Objectif atteint (limite)</span>';
+        } else {
+            targetStatusHTML = '<span class="subject-status not-reached" style="display:inline-flex; align-items:center; gap:0.25rem;"><svg class="status-icon danger" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>Objectif non atteint</span>';
+        }
+    } else {
+        targetStatusHTML = '<span class="subject-status neutral">Aucune note pour l\'instant.</span>';
+    }
+
+    // Separate grades into TA and TS lanes
+    const gradesList = (subject.grades && subject.grades[sem]) ? subject.grades[sem] : [];
+    const tas = gradesList.filter(g => g.type === 'TA');
+    const tss = gradesList.filter(g => g.type === 'TS');
+
+    const createPillsHTML = (list) => {
+        if (list.length === 0) return '<span style="font-size:0.75rem; color:var(--color-text-muted); font-style:italic;">—</span>';
+        return list.map(g => {
+            const statusClass = getStatusClass(g.value);
+            const commentIndicator = '';
+            const photoIndicator = g.hasPhoto ? '<svg class="grade-indicator-icon" style="margin-left:2px;" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>' : '';
+            const indicators = (commentIndicator || photoIndicator) ? `<span style="display:inline-flex; align-items:center; vertical-align:middle; margin-left:0.15rem; gap:1px; opacity:0.85;">${commentIndicator}${photoIndicator}</span>` : '';
+            return `
+                <div class="grade-pill ${statusClass}" data-grade-id="${g.id}">
+                    <span>${g.value.toFixed(1)}</span>${indicators}
+                </div>
+            `;
+        }).join('');
+    };
+
+    // Calculate lane averages for display header
+    const getLaneAvgHTML = (list) => {
+        if (list.length === 0) return '';
+        const sum = list.reduce((s, g) => s + g.value, 0);
+        const avg = sum / list.length;
+        const rounded = roundToHalfPoint(avg);
+        const statusClass = getStatusClass(rounded);
+        return `<span class="lane-avg-badge ${statusClass}">moy: ${avg.toFixed(2)} (≈ ${rounded.toFixed(1)})</span>`;
+    };
+
+    // Langue 2 selector inside its header card
+    let langToggleHTML = '';
+    if (subject.role === 'l2') {
+        const isDe = subject.name === 'Allemand';
+        const isIt = subject.name === 'Italien';
+        langToggleHTML = `
+            <div class="lang-toggle-container" style="margin-left: 0.5rem; vertical-align: middle; padding: 1px;">
+                <button type="button" class="lang-toggle-btn ${isDe ? 'active' : ''}" data-lang="Allemand">DE</button>
+                <button type="button" class="lang-toggle-btn ${isIt ? 'active' : ''}" data-lang="Italien">IT</button>
+            </div>
+        `;
+    }
+
+    // Art Visuel / Musique selector inside its header card
+    let artToggleHTML = '';
+    if (subject.role === 'art') {
+        const isArts = subject.name === 'Arts Visuels';
+        const isMus = subject.name === 'Musique';
+        artToggleHTML = `
+            <div class="lang-toggle-container" style="margin-left: 0.5rem; vertical-align: middle; padding: 1px;">
+                <button type="button" class="lang-toggle-btn ${isArts ? 'active' : ''}" data-lang="Arts Visuels">Arts</button>
+                <button type="button" class="lang-toggle-btn ${isMus ? 'active' : ''}" data-lang="Musique">Musique</button>
+            </div>
+        `;
+    }
+
+    const mode = subject.evaluationMode || 'dual';
+    let lanesHTML = '';
+    let footerHTML = '';
+
+    if (mode === 'locked') {
+        let detailText = '';
+        if (subject.role === 'physique_y2') {
+            detailText = formatYear2SubjectAvg('physique');
+        } else if (subject.role === 'chimie_y2') {
+            detailText = formatYear2SubjectAvg('chimie');
+        } else if (subject.role === 'art_y2') {
+            detailText = formatYear2ArtAvg();
+        }
+        lanesHTML = `
+            <div class="grade-lanes-container" style="grid-template-columns: 1fr;">
+                <div class="grade-lane">
+                    <div class="lane-title">
+                        <span>Moyenne reprise de la 2ème année</span>
+                    </div>
+                    <div style="font-size: 0.95rem; font-weight: 600; color: white; padding: 0.25rem 0;">
+                        ${detailText}
+                    </div>
+                </div>
+            </div>
+        `;
+        const showEvoBtn = (state.currentYear === 3 && sem === 'annual');
+        const evoBtnHTML = showEvoBtn ? `<button type="button" class="btn-sub-evo" title="Afficher l'évolution sur 3 ans">Évolution</button>` : '';
+
+        footerHTML = `
+            <div class="subject-footer" style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; width: 100%;">
+                ${targetStatusHTML}
+                ${evoBtnHTML}
+            </div>
+            <div style="font-size: 0.75rem; color: var(--color-text-secondary); font-style: italic; margin-top: 0.5rem;">
+                Note de 2ème année verrouillée pour le Bilan.
+            </div>
+        `;
+    } else if (sem === 'annual') {
+        // Annual Combined view: show comparison of Sem 1 and Sem 2 averages and final average
+        const avgSem1 = data.sem1Data ? data.sem1Data.roundedAverage : null;
+        const avgSem2 = data.sem2Data ? data.sem2Data.roundedAverage : null;
+        const avgAnn = data.roundedAverage;
+
+        const getCompareValClass = (val) => {
+            if (val === null || val === undefined) return 'empty';
+            if (val < 4.0) return 'failing';
+            if (val === 4.0) return 'warning';
+            return 'passing';
+        };
+
+        const formatVal = (val) => (val !== null && val !== undefined) ? val.toFixed(1) : '—';
+
+        lanesHTML = `
+            <div class="annual-comparison-grid">
+                <div class="comparison-col">
+                    <span class="comparison-col-title">Semestre 1</span>
+                    <span class="comparison-col-val ${getCompareValClass(avgSem1)}">${formatVal(avgSem1)}</span>
+                </div>
+                <div class="comparison-col">
+                    <span class="comparison-col-title">Semestre 2</span>
+                    <span class="comparison-col-val ${getCompareValClass(avgSem2)}">${formatVal(avgSem2)}</span>
+                </div>
+                <div class="comparison-col" style="border-left: 1px solid var(--color-border-subtle); padding-left: 0.5rem;">
+                    <span class="comparison-col-title" style="color: var(--color-primary);">Note Annuelle</span>
+                    <span class="comparison-col-val ${getCompareValClass(avgAnn)}" style="font-size: 1.3rem;">${formatVal(avgAnn)}</span>
+                </div>
+            </div>
+        `;
+
+        const showEvoBtn = (state.currentYear === 3);
+        const evoBtnHTML = showEvoBtn ? `<button type="button" class="btn-sub-evo" title="Afficher l'évolution sur 3 ans">Évolution</button>` : '';
+
+        footerHTML = `
+            <div class="subject-footer" style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; width: 100%;">
+                ${targetStatusHTML}
+                ${evoBtnHTML}
+            </div>
+            <div style="font-size: 0.75rem; color: var(--color-text-secondary); font-style: italic; margin-top: 0.5rem;">
+                Notes éditables en mode Semestre uniquement.
+            </div>
+        `;
+    } else {
+        // Normal semester view: show lanes
+        if (mode === 'standard') {
+            lanesHTML = `
+                <div class="grade-lanes-container" style="grid-template-columns: 1fr;">
+                    <div class="grade-lane">
+                        <div class="lane-title">
+                            <span>Notes</span>
+                            ${getLaneAvgHTML(gradesList)}
+                        </div>
+                        <div class="lane-grades-list">
+                            ${createPillsHTML(gradesList)}
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            lanesHTML = `
+                <div class="grade-lanes-container">
+                    <div class="grade-lane">
+                        <div class="lane-title">
+                            <span>TS</span>
+                            ${getLaneAvgHTML(tss)}
+                        </div>
+                        <div class="lane-grades-list">
+                            ${createPillsHTML(tss)}
+                        </div>
+                    </div>
+                    <div class="grade-lane">
+                        <div class="lane-title">
+                            <span>TA</span>
+                            ${getLaneAvgHTML(tas)}
+                        </div>
+                        <div class="lane-grades-list">
+                            ${createPillsHTML(tas)}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        footerHTML = `
+            <div class="subject-footer">
+                ${targetStatusHTML}
+                <button class="btn btn-secondary add-grade-btn" style="padding: 0.5rem 1rem; font-size: 0.8rem; border-radius: var(--radius-full);">
+                    + Ajouter une note
+                </button>
+            </div>
+        `;
+    }
+
+    let ocEditHTML = '';
+    if (subject.role === 'oc') {
+        ocEditHTML = `
+            <button type="button" class="oc-edit-btn" title="Modifier le sujet choisi">
+                modifier
+            </button>
+        `;
+    }
+
+    let osEditHTML = '';
+    if (subject.role === 'os') {
+        osEditHTML = `
+            <button type="button" class="os-edit-btn" title="Modifier le nom de l'OS">
+                modifier
+            </button>
+        `;
+    }
+
+    const isStandardSubject = subject.id.startsWith('y1_') || subject.id.startsWith('y2_') || subject.id.startsWith('y3_');
+    const deleteBtnHTML = isStandardSubject ? '' : `<button class="btn-delete-subject" title="Supprimer la branche">&times;</button>`;
+    const drawerHTML = (state.currentYear === 3 && sem === 'annual') ? `<div class="sub-evo-drawer"></div>` : '';
+
+    let simulatorHTML = '';
+    if (mode !== 'locked' && sem !== 'annual') {
+        simulatorHTML = `
+            <div class="target-simulator" data-subject-id="${subject.id}">
+                <div class="simulator-header">
+                    <span>Cible : <strong style="color: var(--color-primary);">${subject.target.toFixed(1)}</strong></span>
+                    <span style="font-size: 0.7rem; color: var(--color-text-muted);">Simulateur de réussite</span>
+                </div>
+                <div class="simulator-controls">
+                    <select class="sim-num-tests">
+                        <option value="1">1 test</option>
+                        <option value="2">2 tests</option>
+                        <option value="3">3 tests</option>
+                        <option value="4">4 tests</option>
+                    </select>
+                    ${mode === 'dual' ? `
+                    <span style="font-size: 0.75rem; color: var(--color-text-muted);">en</span>
+                    <select class="sim-type">
+                        <option value="TS">TS</option>
+                        <option value="TA">TA</option>
+                    </select>
+                    ` : ''}
+                    <span style="font-size: 0.75rem; color: var(--color-text-muted);">req. :</span>
+                    <span class="sim-result-badge">...</span>
+                </div>
+            </div>
+        `;
+    }
+
+    return `
+        ${deleteBtnHTML}
+        <div class="subject-header">
+            <div class="subject-title-area">
+                <h3 class="subject-name" style="display: flex; align-items: center; gap: 0.25rem; flex-wrap: wrap;">
+                    ${escapeHTML(subject.name)}
+                    ${ocEditHTML}
+                    ${osEditHTML}
+                    ${langToggleHTML}
+                    ${artToggleHTML}
+                </h3>
+                <span class="subject-target" title="Cliquez pour modifier l'objectif">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                    Objectif <span class="subject-target-val">${subject.target.toFixed(1)}</span>
+                </span>
+            </div>
+            ${badgeHTML}
+        </div>
+
+        <!-- Lanes or Comparison layout -->
+        ${lanesHTML}
+
+        ${simulatorHTML}
+        ${footerHTML}
+        ${drawerHTML}
+    `;
+}
+
+function updateSubjectDetailsModalContent(subject) {
+    const modalContent = document.getElementById('subject-details-modal-content');
+    if (!modalContent) return;
+    
+    modalContent.innerHTML = '';
+    
+    const card = document.createElement('div');
+    card.className = 'subject-card';
+    card.setAttribute('data-id', subject.id);
+    card.style.background = 'none';
+    card.style.border = 'none';
+    card.style.padding = '0';
+    card.style.boxShadow = 'none';
+    card.style.backdropFilter = 'none';
+    card.style.webkitBackdropFilter = 'none';
+    
+    const sem = state.currentSemester;
+    card.innerHTML = getSubjectCardInnerHTML(subject, sem);
+    modalContent.appendChild(card);
+    
+    const mode = subject.evaluationMode || 'dual';
+    if (mode !== 'locked' && sem !== 'annual') {
+        updateCardSimulatorBadge(card, subject, sem);
+    }
+}
+
+function openSubjectDetailsModal(subject) {
+    activeDetailsSubjectId = subject.id;
+    updateSubjectDetailsModalContent(subject);
+    openModal(document.getElementById('subject-details-modal'));
+}
+
 function renderSubjects() {
     subjectsContainer.innerHTML = '';
     const currentSubjects = (state.currentYear === 3) ? state.subjectsYear3 : (state.currentYear === 2) ? state.subjectsYear2 : state.subjectsYear1;
     const sem = state.currentSemester;
 
-    currentSubjects.forEach(subject => {
-        const data = calculateSubjectData(subject, sem);
-        const avgRaw = data.rawAverage;
-        const avgRounded = data.roundedAverage;
+    if (state.currentYear === 1) {
+        subjectsContainer.classList.add('gemstone-mode');
+        
+        currentSubjects.forEach((subject, index) => {
+            const data = calculateSubjectData(subject, sem);
+            const avgRaw = data.rawAverage;
+            const avgRounded = data.roundedAverage;
+            const gemClass = getGemClassForSubject(subject, index);
 
-        // Subject Card container
-        const card = document.createElement('div');
-        card.className = animateCards ? 'subject-card slide-up' : 'subject-card';
-        card.setAttribute('data-id', subject.id);
+            let displayAvg = '—';
+            let statusClass = 'empty';
+            if (avgRaw !== null) {
+                displayAvg = avgRaw.toFixed(2);
+                statusClass = getStatusClass(avgRounded);
+            }
 
-        // Circular badge average
-        let badgeHTML = '';
-        if (avgRaw !== null) {
-            const statusClass = getStatusClass(avgRounded);
-            badgeHTML = `
-                <div class="subject-average-badge ${statusClass}">
-                    <span class="subject-average-val">${avgRaw.toFixed(2)}</span>
-                    <span class="subject-average-lbl">MOYENNE</span>
+            const gemDisplayName = gemClass.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+            const isStandardSubject = subject.id.startsWith('y1_') || subject.id.startsWith('y2_') || subject.id.startsWith('y3_');
+            const deleteBtnHTML = isStandardSubject ? '' : `<button class="btn-delete-gem" data-id="${subject.id}" title="Supprimer la branche">&times;</button>`;
+
+            const item = document.createElement('div');
+            item.className = 'gem-item';
+            item.setAttribute('data-id', subject.id);
+            item.innerHTML = `
+                ${deleteBtnHTML}
+                <div class="gem-sphere gem-${gemClass} ${statusClass}">
+                    <div class="gem-texture"></div>
+                    <span class="gem-sphere-average">${displayAvg}</span>
                 </div>
+                <div class="gem-sphere-shadow"></div>
+                <div class="gem-subject-name">${escapeHTML(subject.name)}</div>
+                <div class="gem-type-name">${gemDisplayName}</div>
             `;
-        } else {
-            badgeHTML = `
-                <div class="subject-average-badge empty">
-                    <span class="subject-average-val">—</span>
-                    <span class="subject-average-lbl">MOYENNE</span>
-                </div>
-            `;
-        }
+            subjectsContainer.appendChild(item);
+        });
 
-        // Target status
-        let targetStatusHTML = '';
-        if (avgRaw !== null) {
-            const isTargetMet = avgRaw >= subject.target;
-            if (isTargetMet) {
-                targetStatusHTML = '<span class="subject-status" style="display:inline-flex; align-items:center; gap:0.25rem;"><svg class="status-icon success" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Objectif atteint</span>';
-            } else if (avgRounded === 4.0 && subject.target === 4.0) {
-                targetStatusHTML = '<span class="subject-status warning" style="display:inline-flex; align-items:center; gap:0.25rem;"><svg class="status-icon warning" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>Objectif atteint (limite)</span>';
+        // Initialize rotation dragging physics on the new spheres
+        initGemstoneRotation();
+
+        // If there is an active details subject modal open, re-render it
+        if (activeDetailsSubjectId) {
+            const activeSubject = currentSubjects.find(s => s.id === activeDetailsSubjectId);
+            if (activeSubject) {
+                updateSubjectDetailsModalContent(activeSubject);
             } else {
-                targetStatusHTML = '<span class="subject-status not-reached" style="display:inline-flex; align-items:center; gap:0.25rem;"><svg class="status-icon danger" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>Objectif non atteint</span>';
+                closeModal(document.getElementById('subject-details-modal'));
+                activeDetailsSubjectId = null;
             }
-        } else {
-            targetStatusHTML = '<span class="subject-status neutral">Aucune note pour l\'instant.</span>';
         }
-
-        // Separate grades into TA and TS lanes
-        const gradesList = (subject.grades && subject.grades[sem]) ? subject.grades[sem] : [];
-        const tas = gradesList.filter(g => g.type === 'TA');
-        const tss = gradesList.filter(g => g.type === 'TS');
-
-        const createPillsHTML = (list) => {
-            if (list.length === 0) return '<span style="font-size:0.75rem; color:var(--color-text-muted); font-style:italic;">—</span>';
-            return list.map(g => {
-                const statusClass = getStatusClass(g.value);
-                const commentIndicator = '';
-                const photoIndicator = g.hasPhoto ? '<svg class="grade-indicator-icon" style="margin-left:2px;" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>' : '';
-                const indicators = (commentIndicator || photoIndicator) ? `<span style="display:inline-flex; align-items:center; vertical-align:middle; margin-left:0.15rem; gap:1px; opacity:0.85;">${commentIndicator}${photoIndicator}</span>` : '';
-                return `
-                    <div class="grade-pill ${statusClass}" data-grade-id="${g.id}">
-                        <span>${g.value.toFixed(1)}</span>${indicators}
-                    </div>
-                `;
-            }).join('');
-        };
-
-        // Calculate lane averages for display header
-        const getLaneAvgHTML = (list) => {
-            if (list.length === 0) return '';
-            const sum = list.reduce((s, g) => s + g.value, 0);
-            const avg = sum / list.length;
-            const rounded = roundToHalfPoint(avg);
-            const statusClass = getStatusClass(rounded);
-            return `<span class="lane-avg-badge ${statusClass}">moy: ${avg.toFixed(2)} (≈ ${rounded.toFixed(1)})</span>`;
-        };
-
-        // Langue 2 selector inside its header card
-        let langToggleHTML = '';
-        if (subject.role === 'l2') {
-            const isDe = subject.name === 'Allemand';
-            const isIt = subject.name === 'Italien';
-            langToggleHTML = `
-                <div class="lang-toggle-container" style="margin-left: 0.5rem; vertical-align: middle; padding: 1px;">
-                    <button type="button" class="lang-toggle-btn ${isDe ? 'active' : ''}" data-lang="Allemand">DE</button>
-                    <button type="button" class="lang-toggle-btn ${isIt ? 'active' : ''}" data-lang="Italien">IT</button>
-                </div>
-            `;
-        }
-
-        // Art Visuel / Musique selector inside its header card
-        let artToggleHTML = '';
-        if (subject.role === 'art') {
-            const isArts = subject.name === 'Arts Visuels';
-            const isMus = subject.name === 'Musique';
-            artToggleHTML = `
-                <div class="lang-toggle-container" style="margin-left: 0.5rem; vertical-align: middle; padding: 1px;">
-                    <button type="button" class="lang-toggle-btn ${isArts ? 'active' : ''}" data-lang="Arts Visuels">Arts</button>
-                    <button type="button" class="lang-toggle-btn ${isMus ? 'active' : ''}" data-lang="Musique">Musique</button>
-                </div>
-            `;
-        }
-
-        const mode = subject.evaluationMode || 'dual';
-        let lanesHTML = '';
-        let footerHTML = '';
-
-        if (mode === 'locked') {
-            let detailText = '';
-            if (subject.role === 'physique_y2') {
-                detailText = formatYear2SubjectAvg('physique');
-            } else if (subject.role === 'chimie_y2') {
-                detailText = formatYear2SubjectAvg('chimie');
-            } else if (subject.role === 'art_y2') {
-                detailText = formatYear2ArtAvg();
+    } else {
+        subjectsContainer.classList.remove('gemstone-mode');
+        
+        currentSubjects.forEach(subject => {
+            const data = calculateSubjectData(subject, sem);
+            
+            // Subject Card container
+            const card = document.createElement('div');
+            card.className = animateCards ? 'subject-card slide-up' : 'subject-card';
+            card.setAttribute('data-id', subject.id);
+            
+            card.innerHTML = getSubjectCardInnerHTML(subject, sem);
+            subjectsContainer.appendChild(card);
+            
+            const mode = subject.evaluationMode || 'dual';
+            if (mode !== 'locked' && sem !== 'annual') {
+                updateCardSimulatorBadge(card, subject, sem);
             }
-            lanesHTML = `
-                <div class="grade-lanes-container" style="grid-template-columns: 1fr;">
-                    <div class="grade-lane">
-                        <div class="lane-title">
-                            <span>Moyenne reprise de la 2ème année</span>
-                        </div>
-                        <div style="font-size: 0.95rem; font-weight: 600; color: white; padding: 0.25rem 0;">
-                            ${detailText}
-                        </div>
-                    </div>
-                </div>
-            `;
-            const showEvoBtn = (state.currentYear === 3 && sem === 'annual');
-            const evoBtnHTML = showEvoBtn ? `<button type="button" class="btn-sub-evo" title="Afficher l'évolution sur 3 ans">📊 Évolution</button>` : '';
-
-            footerHTML = `
-                <div class="subject-footer" style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; width: 100%;">
-                    ${targetStatusHTML}
-                    ${evoBtnHTML}
-                </div>
-                <div style="font-size: 0.75rem; color: var(--color-text-secondary); font-style: italic; margin-top: 0.5rem;">
-                    Note de 2ème année verrouillée pour le Bilan.
-                </div>
-            `;
-        } else if (sem === 'annual') {
-            // Annual Combined view: show comparison of Sem 1 and Sem 2 averages and final average
-            const avgSem1 = data.sem1Data ? data.sem1Data.roundedAverage : null;
-            const avgSem2 = data.sem2Data ? data.sem2Data.roundedAverage : null;
-            const avgAnn = data.roundedAverage;
-
-            const getCompareValClass = (val) => {
-                if (val === null || val === undefined) return 'empty';
-                if (val < 4.0) return 'failing';
-                if (val === 4.0) return 'warning';
-                return 'passing';
-            };
-
-            const formatVal = (val) => (val !== null && val !== undefined) ? val.toFixed(1) : '—';
-
-            lanesHTML = `
-                <div class="annual-comparison-grid">
-                    <div class="comparison-col">
-                        <span class="comparison-col-title">Semestre 1</span>
-                        <span class="comparison-col-val ${getCompareValClass(avgSem1)}">${formatVal(avgSem1)}</span>
-                    </div>
-                    <div class="comparison-col">
-                        <span class="comparison-col-title">Semestre 2</span>
-                        <span class="comparison-col-val ${getCompareValClass(avgSem2)}">${formatVal(avgSem2)}</span>
-                    </div>
-                    <div class="comparison-col" style="border-left: 1px solid var(--color-border-subtle); padding-left: 0.5rem;">
-                        <span class="comparison-col-title" style="color: var(--color-primary);">Note Annuelle</span>
-                        <span class="comparison-col-val ${getCompareValClass(avgAnn)}" style="font-size: 1.3rem;">${formatVal(avgAnn)}</span>
-                    </div>
-                </div>
-            `;
-
-            const showEvoBtn = (state.currentYear === 3);
-            const evoBtnHTML = showEvoBtn ? `<button type="button" class="btn-sub-evo" title="Afficher l'évolution sur 3 ans">📊 Évolution</button>` : '';
-
-            footerHTML = `
-                <div class="subject-footer" style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; width: 100%;">
-                    ${targetStatusHTML}
-                    ${evoBtnHTML}
-                </div>
-                <div style="font-size: 0.75rem; color: var(--color-text-secondary); font-style: italic; margin-top: 0.5rem;">
-                    Notes éditables en mode Semestre uniquement.
-                </div>
-            `;
-        } else {
-            // Normal semester view: show lanes
-            if (mode === 'standard') {
-                lanesHTML = `
-                    <div class="grade-lanes-container" style="grid-template-columns: 1fr;">
-                        <div class="grade-lane">
-                            <div class="lane-title">
-                                <span>Notes</span>
-                                ${getLaneAvgHTML(gradesList)}
-                            </div>
-                            <div class="lane-grades-list">
-                                ${createPillsHTML(gradesList)}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } else {
-                lanesHTML = `
-                    <div class="grade-lanes-container">
-                        <div class="grade-lane">
-                            <div class="lane-title">
-                                <span>TS</span>
-                                ${getLaneAvgHTML(tss)}
-                            </div>
-                            <div class="lane-grades-list">
-                                ${createPillsHTML(tss)}
-                            </div>
-                        </div>
-                        <div class="grade-lane">
-                            <div class="lane-title">
-                                <span>TA</span>
-                                ${getLaneAvgHTML(tas)}
-                            </div>
-                            <div class="lane-grades-list">
-                                ${createPillsHTML(tas)}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-
-            footerHTML = `
-                <div class="subject-footer">
-                    ${targetStatusHTML}
-                    <button class="btn btn-secondary add-grade-btn" style="padding: 0.5rem 1rem; font-size: 0.8rem; border-radius: var(--radius-full);">
-                        + Ajouter une note
-                    </button>
-                </div>
-            `;
-        }
-
-        let ocEditHTML = '';
-        if (subject.role === 'oc') {
-            ocEditHTML = `
-                <button type="button" class="oc-edit-btn" title="Modifier le sujet choisi">
-                    ✏️ modifier
-                </button>
-            `;
-        }
-
-        let osEditHTML = '';
-        if (subject.role === 'os') {
-            osEditHTML = `
-                <button type="button" class="os-edit-btn" title="Modifier le nom de l'OS">
-                    ✏️ modifier
-                </button>
-            `;
-        }
-
-        const isStandardSubject = subject.id.startsWith('y1_') || subject.id.startsWith('y2_') || subject.id.startsWith('y3_');
-        const deleteBtnHTML = isStandardSubject ? '' : `<button class="btn-delete-subject" title="Supprimer la branche">&times;</button>`;
-        const drawerHTML = (state.currentYear === 3 && sem === 'annual') ? `<div class="sub-evo-drawer"></div>` : '';
-
-        let simulatorHTML = '';
-        if (mode !== 'locked' && sem !== 'annual') {
-            simulatorHTML = `
-                <div class="target-simulator" data-subject-id="${subject.id}">
-                    <div class="simulator-header">
-                        <span>Cible : <strong style="color: var(--color-primary);">${subject.target.toFixed(1)}</strong></span>
-                        <span style="font-size: 0.7rem; color: var(--color-text-muted);">Simulateur de réussite</span>
-                    </div>
-                    <div class="simulator-controls">
-                        <select class="sim-num-tests">
-                            <option value="1">1 test</option>
-                            <option value="2">2 tests</option>
-                            <option value="3">3 tests</option>
-                            <option value="4">4 tests</option>
-                        </select>
-                        ${mode === 'dual' ? `
-                        <span style="font-size: 0.75rem; color: var(--color-text-muted);">en</span>
-                        <select class="sim-type">
-                            <option value="TS">TS</option>
-                            <option value="TA">TA</option>
-                        </select>
-                        ` : ''}
-                        <span style="font-size: 0.75rem; color: var(--color-text-muted);">req. :</span>
-                        <span class="sim-result-badge">...</span>
-                    </div>
-                </div>
-            `;
-        }
-
-        card.innerHTML = `
-            ${deleteBtnHTML}
-            <div class="subject-header">
-                <div class="subject-title-area">
-                    <h3 class="subject-name" style="display: flex; align-items: center; gap: 0.25rem; flex-wrap: wrap;">
-                        ${escapeHTML(subject.name)}
-                        ${ocEditHTML}
-                        ${osEditHTML}
-                        ${langToggleHTML}
-                        ${artToggleHTML}
-                    </h3>
-                    <span class="subject-target" title="Cliquez pour modifier l'objectif">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
-                        Objectif <span class="subject-target-val">${subject.target.toFixed(1)}</span>
-                    </span>
-                </div>
-                ${badgeHTML}
-            </div>
-
-            <!-- Lanes or Comparison layout -->
-            ${lanesHTML}
-
-            ${simulatorHTML}
-            ${footerHTML}
-            ${drawerHTML}
-        `;
-
-        subjectsContainer.appendChild(card);
-        if (mode !== 'locked' && sem !== 'annual') {
-            updateCardSimulatorBadge(card, subject, sem);
-        }
-    });
+        });
+    }
     animateCards = false;
+}
+
+function initGemstoneRotation() {
+    const spheres = subjectsContainer.querySelectorAll('.gem-sphere');
+    spheres.forEach(sphere => {
+        const item = sphere.closest('.gem-item');
+        const subId = item.getAttribute('data-id');
+        const texture = sphere.querySelector('.gem-texture');
+        if (!texture) return;
+        
+        let isDragging = false;
+        let startX = 0, startY = 0;
+        let currentX = 0, currentY = 0; // Current position of texture
+        let lastX = 0, lastY = 0;
+        let vx = 0, vy = 0; // Velocities
+        let rotationAngle = 0; // tracking 2D spin angle in degrees
+        let rafId = null;
+        let dragDistance = 0;
+        
+        const maxShift = 20; // Maximum texture slide boundary in pixels (keeps 196px photo inside 140px sphere)
+
+        // Physics step function for inertia
+        function physicsStep() {
+            vx *= 0.95;
+            vy *= 0.95;
+            currentX += vx;
+            currentY += vy;
+            
+            // Add spin based on translation velocities
+            rotationAngle += (vx + vy) * 0.5;
+            
+            // Bounce/clamp at texture boundaries - vector distance clamp
+            const dist = Math.sqrt(currentX * currentX + currentY * currentY);
+            if (dist > maxShift) {
+                currentX = (currentX / dist) * maxShift;
+                currentY = (currentY / dist) * maxShift;
+                vx = -vx * 0.2;
+                vy = -vy * 0.2;
+            }
+            
+            texture.style.transform = `translate(${currentX}px, ${currentY}px) rotate(${rotationAngle}deg)`;
+            
+            if (Math.abs(vx) > 0.05 || Math.abs(vy) > 0.05) {
+                rafId = requestAnimationFrame(physicsStep);
+            } else {
+                rafId = null;
+                if (item) item.classList.remove('is-rotating');
+            }
+        }
+
+        // Pointer start (Mouse & Touch)
+        function onPointerStart(clientX, clientY) {
+            isDragging = true;
+            dragDistance = 0;
+            
+            if (rafId) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
+            }
+            
+            startX = clientX - currentX;
+            startY = clientY - currentY;
+            lastX = clientX;
+            lastY = clientY;
+            vx = 0;
+            vy = 0;
+            
+            sphere.style.cursor = 'grabbing';
+            if (item) item.classList.add('is-rotating');
+        }
+
+        // Pointer move
+        function onPointerMove(clientX, clientY) {
+            if (!isDragging) return;
+            
+            const dx = clientX - lastX;
+            const dy = clientY - lastY;
+            dragDistance += Math.sqrt(dx * dx + dy * dy);
+            
+            currentX = clientX - startX;
+            currentY = clientY - startY;
+            
+            // Constrain drag within limits - vector distance clamp
+            const dist = Math.sqrt(currentX * currentX + currentY * currentY);
+            if (dist > maxShift) {
+                currentX = (currentX / dist) * maxShift;
+                currentY = (currentY / dist) * maxShift;
+            }
+            
+            // Calculate velocity with smoothing
+            vx = dx * 0.8;
+            vy = dy * 0.8;
+            
+            // Add spin relative to motion
+            rotationAngle += (dx + dy) * 0.5;
+            
+            lastX = clientX;
+            lastY = clientY;
+            
+            texture.style.transform = `translate(${currentX}px, ${currentY}px) rotate(${rotationAngle}deg)`;
+        }
+
+        // Pointer end
+        function onPointerEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+            sphere.style.cursor = 'grab';
+            
+            // If the user barely moved the cursor, treat it as a click!
+            if (dragDistance < 6) {
+                if (item) item.classList.remove('is-rotating');
+                const currentSubjects = state.subjectsYear1;
+                const subject = currentSubjects.find(s => s.id === subId);
+                if (subject) {
+                    openSubjectDetailsModal(subject);
+                }
+            } else {
+                // If it was a drag, start inertia slide
+                rafId = requestAnimationFrame(physicsStep);
+            }
+        }
+
+        // Event listeners - Mouse
+        sphere.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            onPointerStart(e.clientX, e.clientY);
+            
+            const onMouseMove = (moveEv) => {
+                onPointerMove(moveEv.clientX, moveEv.clientY);
+            };
+            const onMouseUp = () => {
+                onPointerEnd();
+                window.removeEventListener('mousemove', onMouseMove);
+                window.removeEventListener('mouseup', onMouseUp);
+            };
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('mouseup', onMouseUp);
+        });
+
+        // Event listeners - Touch (Mobile)
+        sphere.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 0) return;
+            const touch = e.touches[0];
+            onPointerStart(touch.clientX, touch.clientY);
+            
+            const onTouchMove = (moveEv) => {
+                if (moveEv.touches.length === 0) return;
+                const t = moveEv.touches[0];
+                onPointerMove(t.clientX, t.clientY);
+                if (dragDistance > 3) {
+                    moveEv.preventDefault();
+                }
+            };
+            const onTouchEnd = () => {
+                onPointerEnd();
+                sphere.removeEventListener('touchmove', onTouchMove);
+                sphere.removeEventListener('touchend', onTouchEnd);
+            };
+            sphere.addEventListener('touchmove', onTouchMove, { passive: false });
+            sphere.addEventListener('touchend', onTouchEnd);
+        });
+    });
 }
 
 function escapeHTML(str) {
@@ -2065,12 +2343,19 @@ document.getElementById('add-subject-btn').addEventListener('click', () => {
     openModal(addSubjectModal);
 });
 
+// Removed toggle-promo-view listener
+
 // --- 11. Tabs and Selector Bindings ---
 document.querySelectorAll('#year-selector .lang-toggle-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         document.querySelectorAll('#year-selector .lang-toggle-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         state.currentYear = parseInt(btn.getAttribute('data-year'));
+        
+        // Close details modal on year switch
+        closeModal(document.getElementById('subject-details-modal'));
+        activeDetailsSubjectId = null;
+        
         saveState();
         updateTabVisibility();
         if (state.currentYear !== 4) {
@@ -2085,6 +2370,11 @@ document.querySelectorAll('.semester-tab').forEach(btn => {
         document.querySelectorAll('.semester-tab').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         state.currentSemester = btn.getAttribute('data-sem');
+        
+        // Close details modal on semester switch
+        closeModal(document.getElementById('subject-details-modal'));
+        activeDetailsSubjectId = null;
+        
         saveState();
         animateCards = true;
         renderSubjects();
@@ -2182,8 +2472,8 @@ document.getElementById('add-subject-form').addEventListener('submit', (e) => {
     closeModal(addSubjectModal);
 });
 
-// Subject click delegation
-subjectsContainer.addEventListener('click', (e) => {
+// Shared helper function for click interactions inside subject cards (normal or detailed modal)
+function handleSubjectInteractionClick(e) {
     const card = e.target.closest('.subject-card');
     if (!card) return;
     const subId = card.getAttribute('data-id');
@@ -2380,13 +2670,34 @@ subjectsContainer.addEventListener('click', (e) => {
             }
         }
     }
+}
+
+// Subject click delegation
+subjectsContainer.addEventListener('click', (e) => {
+    // Standard delegation
+    handleSubjectInteractionClick(e);
 });
 
-// Listener for target simulator changes
-subjectsContainer.addEventListener('change', (e) => {
+// Also bind clicks inside the details modal!
+const subjectDetailsModal = document.getElementById('subject-details-modal');
+if (subjectDetailsModal) {
+    subjectDetailsModal.addEventListener('click', (e) => {
+        handleSubjectInteractionClick(e);
+    });
+}
+
+// Close subject details modal explicit actions
+document.getElementById('close-subject-details-modal').addEventListener('click', () => {
+    closeModal(subjectDetailsModal);
+    activeDetailsSubjectId = null;
+});
+
+// Shared helper function for target simulator changes
+function handleSubjectInteractionChange(e) {
     const simControl = e.target.closest('.simulator-controls select');
     if (simControl) {
         const card = e.target.closest('.subject-card');
+        if (!card) return;
         const subId = card.getAttribute('data-id');
         const currentSubjects = (state.currentYear === 3) ? state.subjectsYear3 : (state.currentYear === 2) ? state.subjectsYear2 : state.subjectsYear1;
         const subject = currentSubjects.find(s => s.id === subId);
@@ -2394,7 +2705,13 @@ subjectsContainer.addEventListener('change', (e) => {
             updateCardSimulatorBadge(card, subject, state.currentSemester);
         }
     }
-});
+}
+
+// Listeners for target simulator changes
+subjectsContainer.addEventListener('change', handleSubjectInteractionChange);
+if (subjectDetailsModal) {
+    subjectDetailsModal.addEventListener('change', handleSubjectInteractionChange);
+}
 
 // Delete Grade action inside details modal
 if (deleteDetailGradeBtn) {
@@ -2825,17 +3142,144 @@ function init() {
         });
     });
 
-    // Brand logo returns to dashboard if onboarded, else landing
-    const navBrand = document.querySelector('.top-nav-brand');
+    // Brand logo returns to landing page
+    const navBrand = document.getElementById('brand-logo-link') || document.querySelector('.top-nav-brand');
     if (navBrand) {
         navBrand.addEventListener('click', () => {
-            if (state.hasSeenOnboarding) {
-                switchView('view-dashboard');
-            } else {
-                switchView('view-landing');
-            }
+            switchView('view-landing');
         });
     }
+
+    // Custom gemstone delete delegator
+    subjectsContainer.addEventListener('click', (e) => {
+        if (e.target.classList.contains('btn-delete-gem')) {
+            e.stopPropagation();
+            const subId = e.target.getAttribute('data-id');
+            const currentSubjects = (state.currentYear === 3) ? state.subjectsYear3 : (state.currentYear === 2) ? state.subjectsYear2 : state.subjectsYear1;
+            const subject = currentSubjects.find(s => s.id === subId);
+            if (subject) {
+                if (confirm(`Voulez-vous vraiment supprimer la branche "${subject.name}"?`)) {
+                    if (state.currentYear === 3) {
+                        state.subjectsYear3 = state.subjectsYear3.filter(s => s.id !== subId);
+                    } else if (state.currentYear === 2) {
+                        state.subjectsYear2 = state.subjectsYear2.filter(s => s.id !== subId);
+                    } else {
+                        state.subjectsYear1 = state.subjectsYear1.filter(s => s.id !== subId);
+                    }
+                    saveState();
+                    renderSubjects();
+                    updateDashboard();
+                }
+            }
+        }
+    });
 }
+
+function compressAndResizeImage(dataUrl, maxWidth = 800, maxHeight = 800, quality = 0.75) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+            if (width > height) {
+                if (width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                }
+            } else {
+                if (height > maxHeight) {
+                    width = Math.round((width * maxHeight) / height);
+                    height = maxHeight;
+                }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = () => {
+            resolve(dataUrl);
+        };
+        img.src = dataUrl;
+    });
+}
+
+// --- File Upload Fallback Bindings ---
+setTimeout(() => {
+    const btnUploadFile = document.getElementById('btn-upload-file');
+    const gradePhotoFile = document.getElementById('grade-photo-file');
+    if (btnUploadFile && gradePhotoFile) {
+        btnUploadFile.addEventListener('click', () => gradePhotoFile.click());
+        gradePhotoFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const compressedDataUrl = await compressAndResizeImage(event.target.result, 800, 800, 0.75);
+                currentUploadedPhotoBase64 = compressedDataUrl;
+                document.getElementById('grade-photo-preview').src = compressedDataUrl;
+                document.getElementById('grade-photo-preview-container').style.display = 'block';
+                
+                const ocrStatus = document.getElementById('ocr-loading-status');
+                if (ocrStatus) ocrStatus.style.display = 'flex';
+                currentOcrText = "";
+                isOcrRunning = true;
+                
+                try {
+                    Tesseract.recognize(compressedDataUrl, 'fra+eng').then(({ data: { text } }) => {
+                        currentOcrText = text;
+                        console.log("Add Grade File OCR:", text);
+                    }).finally(() => {
+                        if (ocrStatus) ocrStatus.style.display = 'none';
+                        isOcrRunning = false;
+                    });
+                } catch(err) {
+                    if (ocrStatus) ocrStatus.style.display = 'none';
+                    isOcrRunning = false;
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    const editBtnUploadFile = document.getElementById('edit-btn-upload-file');
+    const editGradePhotoFile = document.getElementById('edit-grade-photo-file');
+    if (editBtnUploadFile && editGradePhotoFile) {
+        editBtnUploadFile.addEventListener('click', () => editGradePhotoFile.click());
+        editGradePhotoFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const compressedDataUrl = await compressAndResizeImage(event.target.result, 800, 800, 0.75);
+                editUploadedPhotoBase64 = compressedDataUrl;
+                editGradePhotoPreview.src = compressedDataUrl;
+                editGradePhotoPreviewContainer.style.display = 'block';
+                editPhotoDeleted = false;
+                
+                const ocrStatus = editOcrLoadingStatus;
+                if (ocrStatus) ocrStatus.style.display = 'flex';
+                editOcrText = "";
+                isEditOcrRunning = true;
+                
+                try {
+                    Tesseract.recognize(compressedDataUrl, 'fra+eng').then(({ data: { text } }) => {
+                        editOcrText = text;
+                        console.log("Edit Grade File OCR:", text);
+                    }).finally(() => {
+                        if (ocrStatus) ocrStatus.style.display = 'none';
+                        isOcrRunning = false;
+                    });
+                } catch(err) {
+                    if (ocrStatus) ocrStatus.style.display = 'none';
+                    isOcrRunning = false;
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+}, 500);
 
 window.onload = init;

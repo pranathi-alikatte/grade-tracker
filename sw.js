@@ -7,7 +7,18 @@ const ASSETS = [
   './manifest.json',
   './logo.svg',
   './FAH%20SOUND%20.mpeg',
-  './CONFETTI%20SOUND.mp3'
+  './CONFETTI%20SOUND.mp3',
+  './assets/ruby-zoisite.png',
+  './assets/red-jasper.png',
+  './assets/ocean-jasper.png',
+  './assets/rainbow-moonstone.png',
+  './assets/selenite.png',
+  './assets/sodalite.png',
+  './assets/serpentine.png',
+  './assets/rose-quartz.png',
+  './assets/labradorite.png',
+  './assets/picture-jasper.png',
+  './assets/amazonite.png'
 ];
 
 // Install Event - cache assets

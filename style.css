@@ -41,7 +41,7 @@
     --color-avg-neutral-text: #94a3b8;
 
     /* Fonts & Radii */
-    --font-family-sans: 'JetBrains Mono', monospace;
+    --font-family-sans: 'Montserrat', 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-family-mono: 'JetBrains Mono', monospace;
     --radius-sm: 8px;
     --radius-md: 12px;
@@ -168,45 +168,212 @@ body {
 
 /* Promotion Dashboard (Green Card) */
 .promo-dashboard-container {
-    background-color: color-mix(in srgb, #3b5a45 75%, transparent);         /* Translucent forest green */
-    backdrop-filter: blur(12px) saturate(120%);
-    -webkit-backdrop-filter: blur(12px) saturate(120%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: color-mix(in srgb, var(--color-bg-surface) 40%, transparent);
+    backdrop-filter: blur(16px) saturate(130%);
+    -webkit-backdrop-filter: blur(16px) saturate(130%);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: var(--radius-lg);
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
     color: white;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+    transition: box-shadow var(--transition-normal), border-color var(--transition-normal);
+}
+
+/* Status Glowing Colors matching Vaud Criteria */
+.promo-dashboard-container.status-promoted {
+    border-color: rgba(16, 185, 129, 0.35);
+    box-shadow: 0 10px 35px rgba(16, 185, 129, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+.promo-dashboard-container.status-failing {
+    border-color: rgba(239, 68, 68, 0.35);
+    box-shadow: 0 10px 35px rgba(239, 68, 68, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+}
+
+.promo-dashboard-container.status-neutral {
+    border-color: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.05);
 }
 
 .promo-header {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 1.25rem;
 }
 
 .promo-status-badge {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 38px;
-    height: 38px;
-    background-color: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
 }
 
 .promo-text-summary h2 {
-    font-size: 1.25rem;
-    font-weight: 700;
-    letter-spacing: -0.01em;
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.015em;
 }
 
 .promo-text-summary p {
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.88rem;
+    color: var(--color-text-secondary);
     margin-top: 0.15rem;
+}
+
+/* 3D Sliced Sphere CSS Illustration */
+.promo-3d-graphic {
+    position: relative;
+    width: 50px;
+    height: 50px;
+    filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.4));
+    transform: rotate(-30deg);
+    flex-shrink: 0;
+}
+.promo-3d-graphic .slice {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
+/* Volumetric shading overlay */
+.promo-3d-graphic .slice::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.4) 0%, rgba(0, 0, 0, 0.45) 70%, rgba(0, 0, 0, 0.85) 100%);
+    mix-blend-mode: multiply;
+}
+
+/* Top slice */
+.promo-3d-graphic .slice-1 {
+    clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
+    transform: translate(3px, -3px);
+    z-index: 3;
+}
+/* Middle slice */
+.promo-3d-graphic .slice-2 {
+    clip-path: polygon(0 34%, 100% 34%, 100% 66%, 0 66%);
+    transform: translate(0, 0);
+    z-index: 2;
+}
+/* Bottom slice */
+.promo-3d-graphic .slice-3 {
+    clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%);
+    transform: translate(-3px, 3px);
+    z-index: 1;
+}
+
+/* 3D Graphic Gradient Themes */
+/* Promoted (Green/Teal) */
+.status-promoted .slice-1 {
+    background: linear-gradient(135deg, #a7f3d0, #10b981);
+}
+.status-promoted .slice-2 {
+    background: linear-gradient(135deg, #0d9488, #0ea5e9);
+}
+.status-promoted .slice-3 {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+/* Failing (Red/Pink) */
+.status-failing .slice-1 {
+    background: linear-gradient(135deg, #fecaca, #ef4444);
+}
+.status-failing .slice-2 {
+    background: linear-gradient(135deg, #f43f5e, #be123c);
+}
+.status-failing .slice-3 {
+    background: linear-gradient(135deg, #9d174d, #4c0519);
+}
+
+/* Neutral (Slate/Grey) */
+.status-neutral .slice-1 {
+    background: linear-gradient(135deg, #f1f5f9, #94a3b8);
+}
+.status-neutral .slice-2 {
+    background: linear-gradient(135deg, #64748b, #475569);
+}
+.status-neutral .slice-3 {
+    background: linear-gradient(135deg, #334155, #1e293b);
+}
+
+/* 3D Icons for Bilan par groupe */
+.bilan-3d-icon {
+    position: relative;
+    width: 32px;
+    height: 32px;
+    filter: drop-shadow(0 4px 3px rgba(0, 0, 0, 0.35));
+    flex-shrink: 0;
+}
+
+/* G1 Pebble Icon */
+.icon-g1 .pebble {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 40% 60% 50% 50% / 50% 50% 60% 40%;
+    background: linear-gradient(135deg, #cbd5e1, #64748b);
+    top: 3px;
+    left: 6px;
+    z-index: 2;
+    box-shadow: inset 2px 2px 4px rgba(255, 255, 255, 0.4), inset -2px -2px 4px rgba(0, 0, 0, 0.4);
+}
+.icon-g1 .collar {
+    position: absolute;
+    width: 24px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #cbd5e1;
+    border-top-color: transparent;
+    bottom: 3px;
+    left: 4px;
+    transform: rotate(-15deg);
+    z-index: 1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* G2 Concentric Cutout Icon */
+.icon-g2 .ring {
+    position: absolute;
+    border-radius: 50%;
+    box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.3), inset -1.5px -1.5px 3px rgba(0, 0, 0, 0.4);
+}
+.icon-g2 .ring-1 {
+    width: 26px;
+    height: 26px;
+    background: linear-gradient(135deg, #f97316, #d97706);
+    top: 3px;
+    left: 3px;
+    z-index: 1;
+    clip-path: polygon(0 0, 100% 0, 100% 75%, 0 75%);
+}
+.icon-g2 .ring-2 {
+    width: 18px;
+    height: 18px;
+    background: linear-gradient(135deg, #ec4899, #be185d);
+    top: 7px;
+    left: 7px;
+    z-index: 2;
+    transform: translate(2px, 2px);
+    clip-path: polygon(0 0, 100% 0, 100% 75%, 0 75%);
+}
+.icon-g2 .ring-3 {
+    width: 10px;
+    height: 10px;
+    background: linear-gradient(135deg, #a855f7, #6b21a8);
+    top: 11px;
+    left: 11px;
+    z-index: 3;
+    transform: translate(4px, 4px);
 }
 
 /* Stats Cards Grid */
@@ -1337,48 +1504,41 @@ body {
     margin-top: 0.5rem;
 }
 
-/* JetBrains Mono variable weight classes */
+/* Redefined variable weight classes to use JetBrains Mono for a clean digital dashboard look */
 .jetbrains-mono-light {
-  font-family: "JetBrains Mono", monospace;
-  font-optical-sizing: auto;
+  font-family: 'JetBrains Mono', monospace !important;
   font-weight: 300;
   font-style: normal;
 }
 .jetbrains-mono-regular {
-  font-family: "JetBrains Mono", monospace;
-  font-optical-sizing: auto;
+  font-family: 'JetBrains Mono', monospace !important;
   font-weight: 400;
   font-style: normal;
 }
 .jetbrains-mono-medium {
-  font-family: "JetBrains Mono", monospace;
-  font-optical-sizing: auto;
+  font-family: 'JetBrains Mono', monospace !important;
   font-weight: 500;
   font-style: normal;
 }
 .jetbrains-mono-semibold {
-  font-family: "JetBrains Mono", monospace;
-  font-optical-sizing: auto;
+  font-family: 'JetBrains Mono', monospace !important;
   font-weight: 600;
   font-style: normal;
 }
 .jetbrains-mono-bold {
-  font-family: "JetBrains Mono", monospace;
-  font-optical-sizing: auto;
+  font-family: 'JetBrains Mono', monospace !important;
   font-weight: 700;
   font-style: normal;
 }
 .jetbrains-mono-extrabold {
-  font-family: "JetBrains Mono", monospace;
-  font-optical-sizing: auto;
+  font-family: 'JetBrains Mono', monospace !important;
   font-weight: 800;
   font-style: normal;
 }
 
 /* Backward compatibility custom class */
 .jetbrains-mono-grade-tracker {
-  font-family: "JetBrains Mono", monospace;
-  font-optical-sizing: auto;
+  font-family: 'JetBrains Mono', monospace !important;
   font-weight: 600;
   font-style: normal;
 }
@@ -1902,4 +2062,346 @@ body {
     padding: 0.6rem 0.5rem;
     border-radius: var(--radius-sm);
     text-transform: none;
+}
+
+/* ==========================================================================
+   Year 1 Gemstone Sphere Visualizations
+   ========================================================================== */
+
+/* Gemstone layout container override */
+.subjects-list.gemstone-mode {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 3rem 2rem !important;
+    padding: 1.5rem 0 !important;
+}
+
+/* Enforce exactly 4/4/3 centered layout on desktop */
+@media (min-width: 820px) {
+    .subjects-list.gemstone-mode {
+        max-width: 800px !important;
+        margin: 0 auto !important;
+    }
+}
+
+/* Gemstone Item Wrapper */
+.gem-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 160px;
+    transition: transform var(--transition-fast);
+}
+
+.gem-item:hover {
+    transform: translateY(-8px);
+}
+
+/* Gemstone Sphere Container */
+.gem-sphere {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Mirror Reflection */
+    -webkit-box-reflect: below 2px linear-gradient(transparent, transparent 75%, rgba(255, 255, 255, 0.08));
+    /* Minimal contact shadow (floor shadow does the rest) */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+    transition: box-shadow var(--transition-fast);
+}
+
+.gem-sphere:active {
+    cursor: grabbing;
+}
+
+.gem-sphere:hover {
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+}
+
+/* Realistic Floor Drop Shadow for Spheres - Hidden by default, visible when hovered/rotated */
+.gem-sphere-shadow {
+    position: absolute;
+    width: 120px;
+    height: 12px;
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.45) 45%, rgba(0, 0, 0, 0) 70%);
+    bottom: 2.3rem; /* Positioned exactly under the sphere resting contact point */
+    left: 50%;
+    transform: translateX(-50%) scale(0.5);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.gem-item:hover .gem-sphere-shadow,
+.gem-item.is-rotating .gem-sphere-shadow {
+    transform: translateX(-50%) scale(0.85);
+    opacity: 0.65; /* Softens and shrinks slightly when sphere floats up */
+}
+
+/* Reveal Gemstone Name under Subject Name on Hover */
+.gem-type-name {
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+    margin-top: 0.1rem;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
+    pointer-events: none;
+    font-family: 'Montserrat', 'Outfit', -apple-system, sans-serif;
+    text-align: center;
+}
+
+.gem-item:hover .gem-type-name {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Fixed Glassy Highlight and Inner Depth Overlay */
+.gem-sphere::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    z-index: 3;
+    pointer-events: none;
+    box-shadow: 
+        inset -20px -20px 40px rgba(0, 0, 0, 0.9),       /* Deep bottom-right shadow */
+        inset 0 -8px 20px rgba(0, 0, 0, 0.5),            /* Ambient bottom shade */
+        inset 12px 12px 20px rgba(255, 255, 255, 0.45),   /* Sharp top-left light leak */
+        inset 0 4px 8px rgba(255, 255, 255, 0.2);        /* Secondary highlight */
+    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0) 55%);
+}
+
+/* Rotatable Gemstone Texture Layer */
+.gem-texture {
+    position: absolute;
+    width: 196px;
+    height: 196px;
+    top: -28px;
+    left: -28px;
+    z-index: 1;
+    pointer-events: none;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: transform 0.1s ease-out; /* Smooth slide-back/momentum shift */
+}
+
+/* Average Label on the Sphere */
+.gem-sphere-average {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95), 0 0 4px rgba(0, 0, 0, 0.7);
+    z-index: 4;
+    pointer-events: none;
+    font-family: var(--font-family-mono);
+    letter-spacing: -0.02em;
+}
+
+/* Subject Name under the Sphere */
+.gem-subject-name {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--color-text-secondary);
+    margin-top: 1rem;
+    max-width: 130px;
+    word-wrap: break-word;
+    height: 2.2rem;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    pointer-events: none;
+    font-family: 'Montserrat', 'Outfit', -apple-system, sans-serif;
+}
+
+/* Stack other modals on top of subject-details-modal */
+#add-grade-modal, #grade-details-modal {
+    z-index: 1100 !important;
+}
+
+/* ==========================================================================
+   Gemstone Texture Definitions (Highly Realistic & Organic)
+   ========================================================================== */
+
+/* 1. Ruby Zoisite */
+.gem-ruby-zoisite .gem-texture {
+    background-image: url('assets/ruby-zoisite.png');
+}
+
+/* 2. Red Jasper */
+.gem-red-jasper .gem-texture {
+    background-image: url('assets/red-jasper.png');
+}
+
+/* 3. Ocean Jasper */
+.gem-ocean-jasper .gem-texture {
+    background-image: url('assets/ocean-jasper.png');
+}
+
+/* 4. Rainbow Moonstone */
+.gem-rainbow-moonstone .gem-texture {
+    background-image: url('assets/rainbow-moonstone.png');
+}
+
+/* 5. Selenite */
+.gem-selenite .gem-texture {
+    background-image: url('assets/selenite.png');
+}
+
+/* 6. Sodalite */
+.gem-sodalite .gem-texture {
+    background-image: url('assets/sodalite.png');
+}
+
+/* 7. Serpentine */
+.gem-serpentine .gem-texture {
+    background-image: url('assets/serpentine.png');
+}
+
+/* 8. Rose Quartz */
+.gem-rose-quartz .gem-texture {
+    background-image: url('assets/rose-quartz.png');
+}
+
+/* 9. Labradorite */
+.gem-labradorite .gem-texture {
+    background-image: url('assets/labradorite.png');
+}
+
+/* 10. Picture Jasper */
+.gem-picture-jasper .gem-texture {
+    background-image: url('assets/picture-jasper.png');
+}
+
+/* 11. Amazonite */
+.gem-amazonite .gem-texture {
+    background-image: url('assets/amazonite.png');
+}
+
+
+/* Visual Gauge View styles */
+.promo-gauge-view {
+    display: none; /* Hidden by default */
+    align-items: center;
+    justify-content: center;
+    gap: 2.5rem;
+    padding: 0.5rem 0;
+    width: 100%;
+}
+
+.gauge-stat-side {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100px;
+}
+
+.gauge-stat-side-val {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: white;
+    font-family: 'Montserrat', 'Outfit', -apple-system, sans-serif;
+}
+
+.gauge-stat-side-label {
+    font-size: 0.68rem;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.25rem;
+}
+
+#toggle-promo-view {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--color-border-subtle);
+    color: var(--color-text-secondary);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+#toggle-promo-view:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+/* CSS Toggling */
+.promo-dashboard-container.visual-view-active .promo-stats-grid {
+    display: none !important;
+}
+
+.promo-dashboard-container.visual-view-active .promo-gauge-view {
+    display: flex !important;
+}
+
+/* ==========================================================================
+   Custom Gemstone & Delete Button Styles
+   ========================================================================== */
+
+/* Custom Gemstone Visual Styling */
+.gem-custom .gem-texture {
+    background-image: url('assets/custom-gem.png');
+    background-size: cover;
+    /* Fallback high-fidelity radial gradient (iridescent / magic crystal look) */
+    background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.6) 0%, rgba(96, 165, 250, 0.5) 30%, rgba(139, 92, 246, 0.6) 60%, rgba(244, 63, 94, 0.5) 85%, rgba(15, 23, 42, 0.95) 100%);
+}
+
+/* Gemstone Delete Button */
+.btn-delete-gem {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background-color: #ef4444;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity var(--transition-fast), transform var(--transition-fast);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.gem-item:hover .btn-delete-gem {
+    opacity: 1;
+}
+
+.btn-delete-gem:hover {
+    background-color: #dc2626;
+    transform: scale(1.15);
 }
