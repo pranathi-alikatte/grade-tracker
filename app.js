@@ -186,6 +186,43 @@ function playFahSound() {
     }
 }
 
+function showSidebarToast(message, type = 'error') {
+    let container = document.getElementById('toast-sidebar-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-sidebar-container';
+        container.className = 'toast-sidebar-container';
+        document.body.appendChild(container);
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = `sidebar-toast toast-${type}`;
+    
+    const iconSvg = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-failing-bg)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+    
+    toast.innerHTML = `
+        <span class="toast-icon">${iconSvg}</span>
+        <div class="toast-content">
+            <span class="toast-message">${message}</span>
+        </div>
+        <button class="toast-close-btn">&times;</button>
+    `;
+    
+    container.appendChild(toast);
+    
+    toast.querySelector('.toast-close-btn').addEventListener('click', () => {
+        toast.classList.add('toast-slide-out');
+        toast.addEventListener('animationend', () => toast.remove());
+    });
+    
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.classList.add('toast-slide-out');
+            toast.addEventListener('animationend', () => toast.remove());
+        }
+    }, 4000);
+}
+
 function resizeConfettiCanvas() {
     if (canvas) {
         canvas.width = window.innerWidth;
@@ -2999,7 +3036,7 @@ document.getElementById('add-grade-form').addEventListener('submit', (e) => {
                     } else if (value < 4.0) {
                         playFahSound();
                         if (value < 3.0) {
-                            alert("bruh");
+                            showSidebarToast("bruh");
                         }
                     }
 
