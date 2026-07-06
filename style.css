@@ -1217,13 +1217,12 @@ body {
     opacity: 0.8;
 }
 
-/* Dim all lines when chart is hovered or has js highlight active */
-#multi-subject-svg:hover .graph-line-group,
-#multi-subject-svg.has-highlight .graph-line-group {
-    opacity: 0.2;
+/* Dim other lines only when one is hovered or highlighted */
+#multi-subject-svg.has-highlight .graph-line-group:not(.highlighted),
+#multi-subject-svg:has(.graph-line-group:hover) .graph-line-group:not(:hover) {
+    opacity: 0.15;
 }
 
-/* Bring hovered or programmatically highlighted line to full focus */
 #multi-subject-svg .graph-line-group:hover,
 #multi-subject-svg .graph-line-group.highlighted {
     opacity: 1;
@@ -2882,17 +2881,29 @@ body.theme-light #multi-subject-svg line {
 }
 
 body.theme-light #multi-subject-svg .graph-line-group {
-    opacity: 0.6;
+    opacity: 0.75;
 }
 
-body.theme-light #multi-subject-svg:hover .graph-line-group,
-body.theme-light #multi-subject-svg.has-highlight .graph-line-group {
-    opacity: 0.12;
+/* Dim other lines only when one is hovered or highlighted */
+body.theme-light #multi-subject-svg.has-highlight .graph-line-group:not(.highlighted),
+body.theme-light #multi-subject-svg:has(.graph-line-group:hover) .graph-line-group:not(:hover) {
+    opacity: 0.18 !important;
 }
 
 body.theme-light #multi-subject-svg .graph-line-group:hover,
 body.theme-light #multi-subject-svg .graph-line-group.highlighted {
-    opacity: 1;
+    opacity: 1 !important;
+}
+
+/* Force average threshold limit line to be red */
+body.theme-light #multi-subject-svg line.promo-limit-line,
+body.theme-light .evolution-graph-svg line.promo-limit-line {
+    stroke: #ef4444 !important;
+}
+
+body.theme-light #multi-subject-svg text.promo-limit-text,
+body.theme-light .evolution-graph-svg text.promo-limit-text {
+    fill: #ef4444 !important;
 }
 
 /* Toast styling matching the warm light palette */

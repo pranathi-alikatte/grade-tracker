@@ -1248,8 +1248,8 @@ function renderSubjectEvolutionChart(subject, drawer) {
         <div style="background: rgba(0,0,0,0.03); border-radius: var(--radius-md); padding: 0.5rem; display: flex; justify-content: center;">
             <svg viewBox="0 0 360 100" width="100%" height="100" style="max-width: 360px; overflow: visible;">
                 <!-- Promotion Threshold Line -->
-                <line x1="20" y1="${thresholdY}" x2="340" y2="${thresholdY}" stroke="#ef4444" stroke-width="1.2" stroke-dasharray="3,3" opacity="0.6" />
-                <text x="15" y="${thresholdY + 3}" font-size="8" fill="#ef4444" font-weight="bold" text-anchor="end">4.0</text>
+                <line class="promo-limit-line" x1="20" y1="${thresholdY}" x2="340" y2="${thresholdY}" stroke="#ef4444" stroke-width="1.2" stroke-dasharray="3,3" opacity="0.8" />
+                <text class="promo-limit-text" x="15" y="${thresholdY + 3}" font-size="8" fill="#ef4444" font-weight="bold" text-anchor="end">4.0</text>
                 
                 <!-- X-Axis Labels -->
                 <text x="60" y="98" font-size="9" fill="var(--color-text-muted)" text-anchor="middle">1ère année</text>
@@ -1569,8 +1569,8 @@ function renderMultiSubjectGraph() {
                 <line x1="50" y1="${mapY(2.0)}" x2="${svgWidth - 50}" y2="${mapY(2.0)}" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
 
                 <!-- Promotion Limit Line (4.0) -->
-                <line x1="50" y1="${thresholdY}" x2="${svgWidth - 50}" y2="${thresholdY}" stroke="#ef4444" stroke-dasharray="4,4" stroke-width="1.5" opacity="0.6"/>
-                <text x="${svgWidth - 45}" y="${thresholdY + 3}" fill="#ef4444" font-family="var(--font-family-sans)" font-size="10" font-weight="700">4.0</text>
+                <line class="promo-limit-line" x1="50" y1="${thresholdY}" x2="${svgWidth - 50}" y2="${thresholdY}" stroke="#ef4444" stroke-dasharray="4,4" stroke-width="1.5" opacity="0.8"/>
+                <text class="promo-limit-text" x="${svgWidth - 45}" y="${thresholdY + 3}" fill="#ef4444" font-family="var(--font-family-sans)" font-size="10" font-weight="700">4.0</text>
 
                 <!-- X-Axis Labels -->
                 <text x="${xCoords[1]}" y="${svgHeight - 8}" font-size="11" fill="var(--color-text-muted)" text-anchor="middle" font-weight="600">1ère année</text>
