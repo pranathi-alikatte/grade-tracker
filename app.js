@@ -1106,13 +1106,16 @@ function renderYearSelector() {
             
             saveState();
             updateTabVisibility();
-            if (state.currentYear !== 4) {
-                animateCards = true;
-                renderSubjects();
-                updateDashboard();
-            } else {
-                renderDedicatedEvolutionSlide();
-            }
+            
+            triggerViewTransition(() => {
+                if (state.currentYear !== 4) {
+                    animateCards = true;
+                    renderSubjects();
+                    updateDashboard();
+                } else {
+                    renderDedicatedEvolutionSlide();
+                }
+            });
         });
     });
 }
@@ -1552,6 +1555,20 @@ function updateTabVisibility() {
     const bilanSec = document.querySelector('.bilan-section');
     const addSubBtn = document.getElementById('add-subject-btn');
 
+    // Show/hide Examens tab based on current active year
+    const tabExams = document.getElementById('tab-exams');
+    if (tabExams) {
+        const isYear3 = (getBaseYear() === 3);
+        tabExams.style.display = isYear3 ? 'inline-block' : 'none';
+        if (!isYear3 && state.currentSemester === 'exams') {
+            state.currentSemester = 'annual';
+            document.querySelectorAll('.semester-tab').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-sem') === 'annual');
+            });
+            saveState();
+        }
+    }
+
     if (isYear4) {
         if (evoContainer) evoContainer.style.display = 'flex';
         if (promoDashboard) promoDashboard.style.display = 'none';
@@ -1569,6 +1586,27 @@ function updateTabVisibility() {
         if (bilanSec) bilanSec.style.display = 'block';
         if (addSubBtn) addSubBtn.style.display = 'inline-flex';
     }
+}
+
+function triggerViewTransition(callback) {
+    const targets = document.querySelectorAll('#promo-dashboard, .subjects-section, .bilan-section');
+    if (targets.length === 0) {
+        callback();
+        return;
+    }
+    
+    targets.forEach(t => t.classList.add('view-transition-exit'));
+    
+    setTimeout(() => {
+        callback();
+        targets.forEach(t => {
+            t.classList.remove('view-transition-exit');
+            t.classList.add('view-transition-enter');
+            // Force reflow
+            void t.offsetWidth;
+            t.classList.remove('view-transition-enter');
+        });
+    }, 150);
 }
 
 function renderDedicatedEvolutionSlide() {
@@ -3070,18 +3108,23 @@ document.getElementById('add-subject-btn').addEventListener('click', () => {
 // --- 11. Tabs and Selector Bindings ---
 document.querySelectorAll('.semester-tab').forEach(btn => {
     btn.addEventListener('click', () => {
+        const targetSem = btn.getAttribute('data-sem');
+        if (state.currentSemester === targetSem) return;
+
         document.querySelectorAll('.semester-tab').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        state.currentSemester = btn.getAttribute('data-sem');
+        state.currentSemester = targetSem;
         
         // Close details modal on semester switch
         closeModal(document.getElementById('subject-details-modal'));
         activeDetailsSubjectId = null;
         
         saveState();
-        animateCards = true;
-        renderSubjects();
-        updateDashboard();
+        triggerViewTransition(() => {
+            animateCards = true;
+            renderSubjects();
+            updateDashboard();
+        });
     });
 });
 
