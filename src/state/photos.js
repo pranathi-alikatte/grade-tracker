@@ -25,8 +25,10 @@ function initDB() {
     });
 }
 
-// Call initDB on startup
-initDB();
+// Call initDB on startup (browser only — Node test runs have no IndexedDB)
+if (typeof indexedDB !== 'undefined') {
+    initDB();
+}
 
 function storePhoto(gradeId, base64Data) {
     return new Promise((resolve) => {
@@ -95,4 +97,36 @@ function deletePhoto(gradeId) {
     });
 }
 
-export { initDB, storePhoto, getPhoto, deletePhoto };
+/** Every stored photo as [{ gradeId, data }] — used by the backup export. */
+function getAllPhotos() {
+    return new Promise((resolve) => {
+        if (!db) {
+            resolve([]);
+            return;
+        }
+        try {
+            const transaction = db.transaction([STORE_NAME], 'readonly');
+            const store = transaction.objectStore(STORE_NAME);
+            const photos = [];
+            const request = store.openCursor();
+            request.onsuccess = (e) => {
+                const cursor = e.target.result;
+                if (cursor) {
+                    photos.push({ gradeId: cursor.key, data: cursor.value });
+                    cursor.continue();
+                } else {
+                    resolve(photos);
+                }
+            };
+            request.onerror = (e) => {
+                console.error('getAllPhotos error:', e.target.error);
+                resolve([]);
+            };
+        } catch (err) {
+            console.error('getAllPhotos transaction error:', err);
+            resolve([]);
+        }
+    });
+}
+
+export { initDB, storePhoto, getPhoto, deletePhoto, getAllPhotos };

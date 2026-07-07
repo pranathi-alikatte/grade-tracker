@@ -1,14 +1,23 @@
 // --- 3. Confetti Engine (HTML5 Canvas) & Audio Assets ---
-const canvas = document.getElementById('confetti-canvas');
-const ctx = canvas ? canvas.getContext('2d') : null;
+// DOM/Audio lookups are lazy so this module can be imported in Node (tests).
+let canvas = null;
+let ctx = null;
+function ensureCanvas() {
+    if (!canvas) {
+        canvas = document.getElementById('confetti-canvas');
+        ctx = canvas ? canvas.getContext('2d') : null;
+    }
+    return canvas;
+}
 let confettiParticles = [];
 let confettiAnimationId = null;
 
-const fahAudio = new Audio('/sounds/fah.mp3');
-const confettiAudio = new Audio('/sounds/confetti.mp3');
+let fahAudio = null;
+let confettiAudio = null;
 
 function playConfettiSound() {
     try {
+        if (!confettiAudio) confettiAudio = new Audio('/sounds/confetti.mp3');
         confettiAudio.currentTime = 0;
         confettiAudio.play().catch(e => console.log("Audio play blocked by browser policy:", e));
     } catch (e) {
@@ -18,6 +27,7 @@ function playConfettiSound() {
 
 function playFahSound() {
     try {
+        if (!fahAudio) fahAudio = new Audio('/sounds/fah.mp3');
         fahAudio.currentTime = 0;
         fahAudio.play().catch(e => console.log("Audio play blocked by browser policy:", e));
     } catch (e) {
@@ -68,10 +78,12 @@ function resizeConfettiCanvas() {
         canvas.height = window.innerHeight;
     }
 }
-window.addEventListener('resize', resizeConfettiCanvas);
+if (typeof window !== 'undefined') {
+    window.addEventListener('resize', resizeConfettiCanvas);
+}
 
 function startConfetti() {
-    if (!canvas || !ctx) return;
+    if (!ensureCanvas() || !ctx) return;
     resizeConfettiCanvas();
     confettiParticles = [];
     const colors = ['#60a5fa', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#a78bfa'];

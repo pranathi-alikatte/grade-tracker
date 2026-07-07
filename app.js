@@ -9,6 +9,7 @@ import { applyTheme } from './src/ui/theme.js';
 import { escapeHTML } from './src/ui/dom.js';
 import { playConfettiSound, playFahSound, showSidebarToast, startConfetti, initBackgroundBoxes } from './src/ui/effects.js';
 import { verifyGradeInText, compressAndResizeImage } from './src/features/ocr.js';
+import { initBackupUI } from './src/features/backup.js';
 import './src/features/pwa.js';
 
 // --- OCR and Photo Temporary State ---
@@ -2957,6 +2958,7 @@ function switchView(viewId) {
 function init() {
     loadState();
     initBackgroundBoxes();
+    initBackupUI();
     
     animateCards = true;
     // View Router toggle on startup
