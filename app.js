@@ -2288,12 +2288,12 @@ function getSubjectCardInnerHTML(subject, sem) {
                             ${examConfig.written ? `
                             <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.25rem;">
                                 <span style="font-size: 0.7rem; color: var(--color-text-primary); font-weight: 600;">Écrit :</span>
-                                <input type="number" step="0.5" min="1" max="6" class="exam-input-field" data-subject-id="${subject.id}" data-exam-type="written" value="${subject.exams && subject.exams.written !== null ? subject.exams.written : ''}" placeholder="—" style="width: 48px; padding: 3px 5px; font-size: 0.8rem; border-radius: var(--radius-sm); border: 1px solid var(--color-border-subtle); background-color: var(--color-bg-elevated); color: var(--color-text-primary); text-align: center; font-weight: 700; outline: none;">
+                                <input type="number" step="0.5" min="1" max="6" class="exam-input-field" data-subject-id="${subject.id}" data-exam-type="written" value="${subject.exams && subject.exams.written !== null ? subject.exams.written : ''}" placeholder="—">
                             </div>
                             ` : ''}
                             <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.25rem;">
                                 <span style="font-size: 0.7rem; color: var(--color-text-primary); font-weight: 600;">Oral :</span>
-                                <input type="number" step="0.5" min="1" max="6" class="exam-input-field" data-subject-id="${subject.id}" data-exam-type="oral" value="${subject.exams && subject.exams.oral !== null ? subject.exams.oral : ''}" placeholder="—" style="width: 48px; padding: 3px 5px; font-size: 0.8rem; border-radius: var(--radius-sm); border: 1px solid var(--color-border-subtle); background-color: var(--color-bg-elevated); color: var(--color-text-primary); text-align: center; font-weight: 700; outline: none;">
+                                <input type="number" step="0.5" min="1" max="6" class="exam-input-field" data-subject-id="${subject.id}" data-exam-type="oral" value="${subject.exams && subject.exams.oral !== null ? subject.exams.oral : ''}" placeholder="—">
                             </div>
                         </div>
                     </div>
