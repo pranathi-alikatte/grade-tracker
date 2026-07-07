@@ -1107,15 +1107,14 @@ function renderYearSelector() {
             saveState();
             updateTabVisibility();
             
-            triggerViewTransition(() => {
-                if (state.currentYear !== 4) {
-                    animateCards = true;
-                    renderSubjects();
-                    updateDashboard();
-                } else {
-                    renderDedicatedEvolutionSlide();
-                }
-            });
+            if (state.currentYear !== 4) {
+                animateCards = true;
+                renderSubjects();
+                updateDashboard();
+            } else {
+                renderDedicatedEvolutionSlide();
+            }
+            triggerInstantTransition();
         });
     });
 }
@@ -1588,25 +1587,14 @@ function updateTabVisibility() {
     }
 }
 
-function triggerViewTransition(callback) {
+function triggerInstantTransition() {
     const targets = document.querySelectorAll('#promo-dashboard, .subjects-section, .bilan-section');
-    if (targets.length === 0) {
-        callback();
-        return;
-    }
-    
-    targets.forEach(t => t.classList.add('view-transition-exit'));
-    
-    setTimeout(() => {
-        callback();
-        targets.forEach(t => {
-            t.classList.remove('view-transition-exit');
-            t.classList.add('view-transition-enter');
-            // Force reflow
-            void t.offsetWidth;
-            t.classList.remove('view-transition-enter');
-        });
-    }, 150);
+    targets.forEach(t => {
+        t.classList.remove('view-fade-in');
+        // Force reflow
+        void t.offsetWidth;
+        t.classList.add('view-fade-in');
+    });
 }
 
 function renderDedicatedEvolutionSlide() {
@@ -3120,11 +3108,10 @@ document.querySelectorAll('.semester-tab').forEach(btn => {
         activeDetailsSubjectId = null;
         
         saveState();
-        triggerViewTransition(() => {
-            animateCards = true;
-            renderSubjects();
-            updateDashboard();
-        });
+        animateCards = true;
+        renderSubjects();
+        updateDashboard();
+        triggerInstantTransition();
     });
 });
 

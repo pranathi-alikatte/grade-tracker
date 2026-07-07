@@ -3404,26 +3404,19 @@ body.theme-light .exam-input-field:focus {
 }
 
 /* View Transition Animations */
-#promo-dashboard,
-.subjects-section,
-.bilan-section {
-    transition: opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1), transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-    opacity: 1;
-    transform: translateY(0);
+.view-fade-in {
+    animation: gentleFadeIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     will-change: opacity, transform;
 }
 
-#promo-dashboard.view-transition-exit,
-.subjects-section.view-transition-exit,
-.bilan-section.view-transition-exit {
-    opacity: 0;
-    transform: translateY(6px);
-}
-
-#promo-dashboard.view-transition-enter,
-.subjects-section.view-transition-enter,
-.bilan-section.view-transition-enter {
-    opacity: 0;
-    transform: translateY(-6px);
+@keyframes gentleFadeIn {
+    from {
+        opacity: 0.7;
+        transform: translateY(3px) scale(0.995);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
