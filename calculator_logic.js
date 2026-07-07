@@ -135,11 +135,68 @@ function calculateDeficitPoints(grades) {
 function processSubjects(subjects, roundSubjectAverages = true) {
   return subjects.map(subject => {
     let finalGrade = 0;
+    let annualGrade = 0;
+
     if (subject.grade !== undefined && subject.grade !== null) {
       finalGrade = subject.grade;
+      annualGrade = subject.grade;
+    } else if (subject.grades && typeof subject.grades === 'object' && (Array.isArray(subject.grades.sem1) || Array.isArray(subject.grades.sem2))) {
+      const avg1 = calculateSubjectAverage(subject.grades.sem1 || [], subject.weights || null);
+      const avg2 = calculateSubjectAverage(subject.grades.sem2 || [], subject.weights || null);
+      const hasSem1 = Array.isArray(subject.grades.sem1) && subject.grades.sem1.length > 0;
+      const hasSem2 = Array.isArray(subject.grades.sem2) && subject.grades.sem2.length > 0;
+
+      let annualRaw = 0;
+      if (hasSem1 && hasSem2) {
+        const rounded1 = roundToHalfPoint(avg1);
+        const rounded2 = roundToHalfPoint(avg2);
+        annualRaw = (rounded1 + rounded2) / 2;
+      } else if (hasSem1) {
+        annualRaw = roundToHalfPoint(avg1);
+      } else if (hasSem2) {
+        annualRaw = roundToHalfPoint(avg2);
+      } else {
+        annualRaw = null;
+      }
+
+      annualGrade = annualRaw !== null ? (roundSubjectAverages ? roundToHalfPoint(annualRaw) : annualRaw) : 0;
+      finalGrade = annualGrade;
     } else if (Array.isArray(subject.grades)) {
       const avg = calculateSubjectAverage(subject.grades, subject.weights || null);
-      finalGrade = roundSubjectAverages ? roundToHalfPoint(avg) : avg;
+      annualGrade = roundSubjectAverages ? roundToHalfPoint(avg) : avg;
+      finalGrade = annualGrade;
+    }
+
+    if (subject.exams && typeof subject.exams === 'object') {
+      const { written = null, oral = null } = subject.exams;
+      const wVal = (written !== null && written !== undefined && !isNaN(written)) ? written : null;
+      const oVal = (oral !== null && oral !== undefined && !isNaN(oral)) ? oral : null;
+
+      let examGradeRaw = null;
+      const isOc = subject.role === 'oc' || (subject.id && subject.id.includes('oc'));
+      
+      if (isOc) {
+        if (oVal !== null) {
+          examGradeRaw = oVal;
+        }
+      } else {
+        if (wVal !== null && oVal !== null) {
+          examGradeRaw = (wVal + oVal) / 2;
+        } else if (wVal !== null) {
+          examGradeRaw = wVal;
+        } else if (oVal !== null) {
+          examGradeRaw = oVal;
+        }
+      }
+
+      if (examGradeRaw !== null) {
+        if (annualGrade !== 0) {
+          const finalRaw = (annualGrade + examGradeRaw) / 2;
+          finalGrade = roundSubjectAverages ? roundToHalfPoint(finalRaw) : finalRaw;
+        } else {
+          finalGrade = roundSubjectAverages ? roundToHalfPoint(examGradeRaw) : examGradeRaw;
+        }
+      }
     }
 
     return {

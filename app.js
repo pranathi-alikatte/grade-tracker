@@ -353,6 +353,19 @@ function formatYear2ArtAvg() {
     return data.rawAverage !== null ? `${data.roundedAverage.toFixed(1)} (moy: ${data.rawAverage.toFixed(2)})` : '—';
 }
 
+function getSubjectExamConfig(subject) {
+    const isY3 = subject.id.startsWith('y3_') || (subject.id.startsWith('sub_') && (state.currentYear === 3 || state.currentYear === 3.5));
+    if (!isY3) return null;
+    
+    const role = subject.role;
+    if (['french', 'math', 'os', 'l2', 'l3'].includes(role)) {
+        return { written: true, oral: true };
+    } else if (role === 'oc') {
+        return { written: false, oral: true };
+    }
+    return null;
+}
+
 /**
  * Calculates subject averages supporting both semesters and annual combinations
  */
@@ -407,6 +420,34 @@ function calculateSubjectData(subject, semester) {
         const avg2 = data2.roundedAverage;
 
         if (avg1 === null && avg2 === null) {
+            const examConfig = getSubjectExamConfig(subject);
+            let examGradeRaw = null;
+            if (examConfig) {
+                const exams = subject.exams || { written: null, oral: null };
+                const wVal = exams.written !== null && exams.written !== undefined && !isNaN(exams.written) ? exams.written : null;
+                const oVal = exams.oral !== null && exams.oral !== undefined && !isNaN(exams.oral) ? exams.oral : null;
+                if (examConfig.written) {
+                    if (wVal !== null && oVal !== null) examGradeRaw = (wVal + oVal) / 2;
+                    else if (wVal !== null) examGradeRaw = wVal;
+                    else if (oVal !== null) examGradeRaw = oVal;
+                } else {
+                    if (oVal !== null) examGradeRaw = oVal;
+                }
+            }
+            if (examGradeRaw !== null) {
+                const roundedEx = roundToHalfPoint(examGradeRaw);
+                return {
+                    rawAverage: examGradeRaw,
+                    roundedAverage: roundedEx,
+                    annualRawAverage: null,
+                    annualRoundedAverage: null,
+                    examGrade: examGradeRaw,
+                    taAverage: null,
+                    tsAverage: null,
+                    sem1Data: data1,
+                    sem2Data: data2
+                };
+            }
             return { rawAverage: null, roundedAverage: null, taAverage: null, tsAverage: null };
         }
 
@@ -419,9 +460,47 @@ function calculateSubjectData(subject, semester) {
         }
         const roundedAverage = roundToHalfPoint(rawAverage);
 
+        // Factor in Maturity Exams
+        let examGradeRaw = null;
+        let finalGradeRounded = roundedAverage;
+        let finalGradeRaw = rawAverage;
+        const examConfig = getSubjectExamConfig(subject);
+        if (examConfig) {
+            const exams = subject.exams || { written: null, oral: null };
+            const wVal = exams.written !== null && exams.written !== undefined && !isNaN(exams.written) ? exams.written : null;
+            const oVal = exams.oral !== null && exams.oral !== undefined && !isNaN(exams.oral) ? exams.oral : null;
+
+            if (examConfig.written) {
+                if (wVal !== null && oVal !== null) {
+                    examGradeRaw = (wVal + oVal) / 2;
+                } else if (wVal !== null) {
+                    examGradeRaw = wVal;
+                } else if (oVal !== null) {
+                    examGradeRaw = oVal;
+                }
+            } else {
+                if (oVal !== null) {
+                    examGradeRaw = oVal;
+                }
+            }
+
+            if (examGradeRaw !== null) {
+                if (roundedAverage !== null) {
+                    finalGradeRaw = (roundedAverage + examGradeRaw) / 2;
+                    finalGradeRounded = roundToHalfPoint(finalGradeRaw);
+                } else {
+                    finalGradeRaw = examGradeRaw;
+                    finalGradeRounded = roundToHalfPoint(examGradeRaw);
+                }
+            }
+        }
+
         return {
-            rawAverage,
-            roundedAverage,
+            rawAverage: finalGradeRaw,
+            roundedAverage: finalGradeRounded,
+            annualRawAverage: rawAverage,
+            annualRoundedAverage: roundedAverage,
+            examGrade: examGradeRaw,
             taAverage: null,
             tsAverage: null,
             sem1Data: data1,
@@ -2161,7 +2240,8 @@ function getSubjectCardInnerHTML(subject, sem) {
         // Annual Combined view: show comparison of Sem 1 and Sem 2 averages and final average
         const avgSem1 = data.sem1Data ? data.sem1Data.roundedAverage : null;
         const avgSem2 = data.sem2Data ? data.sem2Data.roundedAverage : null;
-        const avgAnn = data.roundedAverage;
+        const avgAnn = data.annualRoundedAverage !== undefined ? data.annualRoundedAverage : data.roundedAverage;
+        const avgMaturity = data.roundedAverage;
 
         const getCompareValClass = (val) => {
             if (val === null || val === undefined) return 'empty';
@@ -2172,22 +2252,71 @@ function getSubjectCardInnerHTML(subject, sem) {
 
         const formatVal = (val) => (val !== null && val !== undefined) ? val.toFixed(1) : '—';
 
-        lanesHTML = `
-            <div class="annual-comparison-grid">
-                <div class="comparison-col">
-                    <span class="comparison-col-title">Semestre 1</span>
-                    <span class="comparison-col-val ${getCompareValClass(avgSem1)}">${formatVal(avgSem1)}</span>
+        const examConfig = getSubjectExamConfig(subject);
+
+        if (examConfig) {
+            lanesHTML = `
+                <div class="annual-comparison-grid" style="display: flex; flex-direction: column; gap: 0.75rem; padding: 0.25rem 0;">
+                    <!-- Semester averages row -->
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; border-bottom: 1px dashed var(--color-border-subtle); padding-bottom: 0.5rem;">
+                        <div style="display: flex; flex-direction: column; align-items: center;">
+                            <span style="font-size: 0.7rem; color: var(--color-text-secondary); font-weight: 500;">Semestre 1</span>
+                            <span class="comparison-col-val ${getCompareValClass(avgSem1)}" style="font-size: 0.9rem; font-weight: 700;">${formatVal(avgSem1)}</span>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: center;">
+                            <span style="font-size: 0.7rem; color: var(--color-text-secondary); font-weight: 500;">Semestre 2</span>
+                            <span class="comparison-col-val ${getCompareValClass(avgSem2)}" style="font-size: 0.9rem; font-weight: 700;">${formatVal(avgSem2)}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Annual average and exam inputs row -->
+                    <div style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 0.75rem; align-items: center;">
+                        <!-- Left: Averages -->
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; border-right: 1px solid var(--color-border-subtle); padding-right: 0.5rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.7rem; color: var(--color-text-secondary); font-weight: 500;">Sans exam :</span>
+                                <span class="comparison-col-val ${getCompareValClass(avgAnn)}" style="font-size: 0.95rem; font-weight: 700;">${formatVal(avgAnn)}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(96, 165, 250, 0.05); padding: 4px 6px; border-radius: var(--radius-sm);">
+                                <span style="font-size: 0.7rem; color: var(--color-primary); font-weight: 700;">Avec exam :</span>
+                                <span class="comparison-col-val ${getCompareValClass(avgMaturity)}" style="font-size: 1.1rem; font-weight: 900;">${formatVal(avgMaturity)}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Right: Exam inputs -->
+                        <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+                            ${examConfig.written ? `
+                            <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.25rem;">
+                                <span style="font-size: 0.7rem; color: var(--color-text-primary); font-weight: 500;">Écrit</span>
+                                <input type="number" step="0.5" min="1" max="6" class="exam-input-field" data-subject-id="${subject.id}" data-exam-type="written" value="${subject.exams && subject.exams.written !== null ? subject.exams.written : ''}" placeholder="—" style="width: 44px; padding: 2px 4px; font-size: 0.75rem; background: var(--color-bg-surface); border: 1px solid var(--color-border-subtle); color: var(--color-text-primary); border-radius: var(--radius-sm); text-align: center; font-weight: 700;">
+                            </div>
+                            ` : ''}
+                            <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.25rem;">
+                                <span style="font-size: 0.7rem; color: var(--color-text-primary); font-weight: 500;">Oral</span>
+                                <input type="number" step="0.5" min="1" max="6" class="exam-input-field" data-subject-id="${subject.id}" data-exam-type="oral" value="${subject.exams && subject.exams.oral !== null ? subject.exams.oral : ''}" placeholder="—" style="width: 44px; padding: 2px 4px; font-size: 0.75rem; background: var(--color-bg-surface); border: 1px solid var(--color-border-subtle); color: var(--color-text-primary); border-radius: var(--radius-sm); text-align: center; font-weight: 700;">
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="comparison-col">
-                    <span class="comparison-col-title">Semestre 2</span>
-                    <span class="comparison-col-val ${getCompareValClass(avgSem2)}">${formatVal(avgSem2)}</span>
+            `;
+        } else {
+            lanesHTML = `
+                <div class="annual-comparison-grid">
+                    <div class="comparison-col">
+                        <span class="comparison-col-title">Semestre 1</span>
+                        <span class="comparison-col-val ${getCompareValClass(avgSem1)}">${formatVal(avgSem1)}</span>
+                    </div>
+                    <div class="comparison-col">
+                        <span class="comparison-col-title">Semestre 2</span>
+                        <span class="comparison-col-val ${getCompareValClass(avgSem2)}">${formatVal(avgSem2)}</span>
+                    </div>
+                    <div class="comparison-col" style="border-left: 1px solid var(--color-border-subtle); padding-left: 0.5rem;">
+                        <span class="comparison-col-title" style="color: var(--color-primary);">Note Annuelle</span>
+                        <span class="comparison-col-val ${getCompareValClass(avgAnn)}" style="font-size: 1.3rem;">${formatVal(avgAnn)}</span>
+                    </div>
                 </div>
-                <div class="comparison-col" style="border-left: 1px solid var(--color-border-subtle); padding-left: 0.5rem;">
-                    <span class="comparison-col-title" style="color: var(--color-primary);">Note Annuelle</span>
-                    <span class="comparison-col-val ${getCompareValClass(avgAnn)}" style="font-size: 1.3rem;">${formatVal(avgAnn)}</span>
-                </div>
-            </div>
-        `;
+            `;
+        }
 
         const showEvoBtn = (getBaseYear() === 3);
         const evoBtnHTML = showEvoBtn ? `<button type="button" class="btn-sub-evo" title="Afficher l'évolution sur 3 ans">Évolution</button>` : '';
@@ -2198,7 +2327,7 @@ function getSubjectCardInnerHTML(subject, sem) {
                 ${evoBtnHTML}
             </div>
             <div style="font-size: 0.75rem; color: var(--color-text-secondary); font-style: italic; margin-top: 0.5rem;">
-                Notes éditables en mode Semestre uniquement.
+                ${examConfig ? 'Examens de maturité modifiables directement ci-dessus.' : 'Notes éditables en mode Semestre uniquement.'}
             </div>
         `;
     } else {
@@ -3913,6 +4042,37 @@ function init() {
                     renderSubjects();
                     updateDashboard();
                 }
+            }
+        }
+    });
+
+    // Listen for changes in exam input fields
+    document.addEventListener('change', (e) => {
+        if (e.target.classList.contains('exam-input-field')) {
+            const subId = e.target.getAttribute('data-subject-id');
+            const examType = e.target.getAttribute('data-exam-type'); // 'written' or 'oral'
+            let rawVal = e.target.value.trim().replace(',', '.');
+            let val = parseFloat(rawVal);
+            if (isNaN(val) || val < 1.0 || val > 6.0) {
+                val = null;
+                e.target.value = '';
+            } else {
+                val = Math.round(val * 10) / 10;
+                e.target.value = val.toFixed(1);
+            }
+
+            const currentSubjects = getCurrentSubjects();
+            const subject = currentSubjects.find(s => s.id === subId);
+            if (subject) {
+                if (!subject.exams) {
+                    subject.exams = { written: null, oral: null };
+                }
+                subject.exams[examType] = val;
+                saveState();
+                
+                // Re-render subjects and update dashboard
+                renderSubjects();
+                updateDashboard();
             }
         }
     });

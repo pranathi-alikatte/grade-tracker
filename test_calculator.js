@@ -4,6 +4,7 @@ const {
   calculateCoreSum,
   countInsufficientGrades,
   calculateDeficitPoints,
+  processSubjects,
   checkPromotionStatus
 } = require('./calculator_logic.js');
 
@@ -153,6 +154,35 @@ function runTests() {
   const resE = checkPromotionStatus(highDeficitStudent);
   assert(resE.isPromoted === false, "Student should NOT be promoted");
   assert(resE.failures.includes("DEFICIT_POINTS_EXCEEDED"), "Should fail due to deficit points sum");
+
+  // 6. Test processSubjects with Year 3 exams (written & oral)
+  console.log("\nTesting processSubjects with Year 3 exams...");
+  const subjectsWithExams = [
+    {
+      name: "Français",
+      role: "french",
+      grades: { sem1: [4.5, 4.5], sem2: [4.5, 4.5] }, // annual average rounded = 4.5
+      exams: { written: 5.0, oral: 4.0 } // exam grade = 4.5. final grade = (4.5 + 4.5)/2 = 4.5
+    },
+    {
+      name: "Mathématiques",
+      role: "math",
+      grades: { sem1: [4.0], sem2: [4.0] }, // annual average rounded = 4.0
+      exams: { written: 5.0, oral: 5.0 } // exam grade = 5.0. final grade = (4.0 + 5.0)/2 = 4.5
+    },
+    {
+      name: "Option Complémentaire (OC)",
+      role: "oc",
+      grades: { sem1: [4.0], sem2: [4.0] }, // annual average rounded = 4.0
+      exams: { oral: 5.0 } // OC is oral only, exam grade = 5.0. final grade = (4.0 + 5.0)/2 = 4.5
+    }
+  ];
+  
+  const processed = processSubjects(subjectsWithExams, true);
+  assert(processed[0].finalGrade === 4.5, `Expected Français final grade 4.5, got ${processed[0].finalGrade}`);
+  assert(processed[1].finalGrade === 4.5, `Expected Math final grade 4.5, got ${processed[1].finalGrade}`);
+  assert(processed[2].finalGrade === 4.5, `Expected OC final grade 4.5, got ${processed[2].finalGrade}`);
+  console.log("✓ processSubjects with Year 3 exams tests passed.");
 
   console.log("✓ checkPromotionStatus tests passed.");
   console.log("\nAll tests completed successfully!");
