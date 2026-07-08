@@ -241,8 +241,35 @@ body {
 .header-actions {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
     flex-wrap: wrap;
+    justify-content: flex-end;
+}
+.header-selectors {
+    display: flex;
+    gap: 0.5rem;
+}
+.header-selectors select {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+}
+
+/* Selects must not inherit .btn's inline-flex — it collapses appearance:none
+   dropdowns. Keep them block-level with their natural intrinsic width. */
+select.btn {
+    display: inline-block;
+    width: auto;
+    line-height: 1.3;
+}
+.form-group-inline > #theme-selector {
+    flex: 0 0 auto;
+    min-width: 150px;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    border-radius: var(--radius-full);
+    cursor: pointer;
 }
 
 /* Buttons */
@@ -1483,16 +1510,19 @@ body {
 }
 
 
-/* Theme selector custom dropdown arrow styling */
+/* Colour-theme selector (lives in the settings modal) — full-width native
+   select so it renders reliably and adapts to light/dark via color-scheme. */
 #theme-selector {
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
-    background-repeat: no-repeat;
-    background-position: right 8px center;
-    background-size: 16px;
-    padding-right: 1.75rem !important;
+    width: 100%;
+    padding: 0.7rem 1rem;
+    font-family: var(--font-family-sans);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-md);
+    cursor: pointer;
 }
 
 /* --- Target Simulator --- */
@@ -2212,8 +2242,9 @@ body {
     top: 0;
     z-index: 999;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
     /* Top padding absorbs the notch/status-bar inset so the bar's blurred
        background fills the safe area while its contents stay clear of it. */
     padding: calc(0.8rem + env(safe-area-inset-top)) calc(2rem + env(safe-area-inset-right)) 0.8rem calc(2rem + env(safe-area-inset-left));
@@ -2233,10 +2264,39 @@ body {
 .nav-tabs {
     display: flex;
     gap: 0.35rem;
+    margin-left: auto;          /* desktop: push tabs + icons to the right */
     background-color: rgba(0, 0, 0, 0.2);
     padding: 3px;
     border-radius: var(--radius-md);
     border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Nav icon cluster (settings + light/dark toggle) — grouped, never orphaned. */
+.nav-icons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 0 0 auto;
+}
+.nav-icon-btn {
+    width: 42px;
+    height: 42px;
+    min-height: 42px;
+    padding: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-bg-surface);
+    border: 1px solid var(--color-border-subtle);
+    color: var(--color-text-primary);
+    cursor: pointer;
+    transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+@media (hover: hover) {
+    .nav-icon-btn:hover {
+        background-color: var(--color-bg-elevated);
+    }
 }
 
 .nav-tab-btn {
@@ -3232,9 +3292,6 @@ body.theme-light #theme-toggle-btn:hover {
 }
 
 /* Hide theme-selector dropdown color option in light mode */
-body.theme-light #theme-selector {
-    display: none !important;
-}
 
 /* ==========================================================================
    VISIBILITY AND DYNAMIC SCALING OVERRIDES (LIGHT MODE)
@@ -3626,33 +3683,46 @@ body.theme-light .exam-input-field:focus {
         grid-template-columns: 1fr;
     }
 
-    /* Let the dashboard header actions (Mode selector, theme, Ajouter) wrap
-       instead of crowding on one line. */
+    /* Header actions: the two selectors share one row, Ajouter spans full width
+       below — clean and finger-friendly instead of a crowded line. */
     .header-actions {
-        flex-wrap: wrap;
-        gap: 0.5rem;
+        width: 100%;
+        gap: 0.6rem;
+    }
+    .header-selectors {
+        flex: 1 1 100%;
+    }
+    .header-selectors select {
+        flex: 1;
+        min-width: 0;
+    }
+    #add-subject-btn {
+        flex: 1 1 100%;
+        justify-content: center;
     }
 
-    /* Stack the top nav so brand + tabs + action buttons never crowd/overflow
-       on a phone. Full-width safe-area padding preserved from the base rule. */
+    /* Two clean rows: brand + icon cluster on row 1, full-width tabs on row 2.
+       No orphaned controls. */
     .top-nav-bar {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0.6rem;
+        row-gap: 0.7rem;
         padding-top: calc(0.7rem + env(safe-area-inset-top));
         padding-bottom: 0.7rem;
     }
-    /* The controls group (tabs + settings + theme buttons) spans the row and
-       wraps if space runs out, so nothing clips off the right edge. */
-    .top-nav-bar > div:last-child {
-        width: 100%;
-        justify-content: center;
-        flex-wrap: wrap;
+    .top-nav-brand {
+        flex: 1 1 auto;
+        order: 1;
+    }
+    .nav-icons {
+        order: 2;
     }
     .nav-tabs {
-        flex: 1 1 auto;
-        min-width: 0;
-        justify-content: space-around;
+        order: 3;
+        flex: 1 1 100%;
+        margin-left: 0;
+    }
+    .nav-tabs .nav-tab-btn {
+        flex: 1;
+        justify-content: center;
     }
 
     /* Stacked, full-width form buttons are far easier to tap than a tight row. */
