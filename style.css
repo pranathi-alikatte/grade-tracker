@@ -3670,6 +3670,31 @@ body.theme-light .exam-input-field:focus {
     }
 }
 
+/* --- Interaction polish --- */
+/* Keyboard focus rings — shown only for keyboard users, a finished a11y touch. */
+.btn:focus-visible,
+.chip-btn:focus-visible,
+.nav-tab-btn:focus-visible,
+.semester-tab:focus-visible,
+.lang-toggle-btn:focus-visible,
+.form-input:focus-visible,
+select:focus-visible,
+[contenteditable]:focus-visible,
+.gem-item:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-focus) !important;
+}
+
+/* Subtle hover-lift on cards for pointer devices (touch keeps it flat). */
+@media (hover: hover) {
+    .subject-card {
+        transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+    }
+    .subject-card:hover {
+        transform: translateY(-2px);
+    }
+}
+
 /* Accessibility: honor the OS "reduce motion" setting. Neutralizes the
    decorative transitions/animations (grid-cell fills, view fades, chip zooms)
    for users who are motion-sensitive. Confetti is skipped in JS as well. */
