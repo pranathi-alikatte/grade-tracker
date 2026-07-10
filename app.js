@@ -3470,6 +3470,18 @@ function init() {
             }
         }
     });
+
+    // Live date and clock updater
+    function updateClock() {
+        const el = document.getElementById('live-datetime');
+        if (!el) return;
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('fr-CH', { weekday: 'short', day: 'numeric', month: 'short' });
+        const timeStr = now.toLocaleTimeString('fr-CH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        el.textContent = `${dateStr} — ${timeStr}`;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
 }
 
 
