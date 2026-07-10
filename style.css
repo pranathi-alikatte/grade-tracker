@@ -225,11 +225,14 @@ body {
 
 .header-text h1 {
     font-family: var(--font-family-serif);
-    font-size: 1.65rem;
-    font-weight: 800;
-    letter-spacing: -0.01em;
+    font-size: 1.95rem;
+    font-weight: 900;
+    letter-spacing: -0.02em;
     line-height: 1.15;
-    color: var(--color-text-primary);
+    background: linear-gradient(135deg, var(--color-primary) 0%, #a78bfa 50%, #f472b6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
 }
 
 .header-subtitle {
@@ -3465,7 +3468,7 @@ body.theme-light .filter-pill:hover {
         height: 42px;
     }
     .header-text h1 {
-        font-size: 1.3rem;
+        font-size: 1.55rem;
     }
     .promo-dashboard-container {
         padding: 1.25rem;
