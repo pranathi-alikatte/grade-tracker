@@ -3483,7 +3483,7 @@ function init() {
         const date = now.getDate();
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
-        el.textContent = `${weekday} ${month} ${date}  ${hours}:${minutes}`;
+        el.textContent = `${weekday} ${month} ${date}   ${hours}:${minutes}`;
     }
     updateClock();
     setInterval(updateClock, 1000);
