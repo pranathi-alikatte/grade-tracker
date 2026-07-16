@@ -229,10 +229,7 @@ body {
     font-weight: 900;
     letter-spacing: -0.02em;
     line-height: 1.15;
-    background: linear-gradient(135deg, var(--color-primary) 0%, #a78bfa 50%, #f472b6 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    display: inline-block;
+    color: var(--color-text-primary);
 }
 
 .header-subtitle {
@@ -1779,7 +1776,7 @@ select.btn {
 .landing-title {
     font-size: clamp(2.5rem, 6vw, 4rem);
     font-weight: 900;
-    color: white;
+    color: var(--color-text-primary);
     letter-spacing: -0.04em;
     line-height: 1.1;
     margin-bottom: 1.5rem;
@@ -1787,9 +1784,6 @@ select.btn {
        wraps instead of sizing to its (single-line) content and overflowing. */
     max-width: 100%;
     overflow-wrap: break-word;
-    background: linear-gradient(135deg, #fff 30%, var(--color-primary) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
 }
 
 .landing-tagline {
@@ -3006,11 +3000,7 @@ body.theme-light.paper-texture {
     background: radial-gradient(circle at 50% 50%, #fdfdfc 0%, #fcfbf9 100%) !important;
 }
 
-/* App Header brand styling */
-body.theme-light .top-nav-brand strong {
-    font-family: var(--font-family-sans) !important;
-    font-weight: 800 !important;
-}
+
 
 /* Landing Page Hero and Scroll Indicator */
 body.theme-light .landing-hero-section {
@@ -3113,6 +3103,24 @@ body.theme-light .rule-visual-item {
     border-top-width: 4px !important;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.015) !important;
 }
+
+/* Guide details blocks & step cards */
+body.theme-light .profile-summary-stats,
+body.theme-light .mock-target-pills,
+body.theme-light .scan-step {
+    background-color: rgba(0, 0, 0, 0.02) !important;
+    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+    box-shadow: none !important;
+}
+
+body.theme-light .scan-step h5,
+body.theme-light .mock-target-pill,
+body.theme-light .mock-row .val,
+body.theme-light .profile-header-status h4,
+body.theme-light .profile-summary-stats strong {
+    color: var(--color-text-primary) !important;
+}
+
 
 /* Bilan Par Groupe list elements */
 body.theme-light .bilan-list li {
@@ -4186,4 +4194,115 @@ body:not(.theme-light) .onboarding-theme-mode-btn.active {
     color: #000000 !important;
     border-color: #ffffff !important;
     font-weight: 800 !important;
+}
+
+/* --- User Sign-In Styles --- */
+.auth-toggle-container {
+    display: flex;
+    background: var(--color-bg-elevated);
+    padding: 4px;
+    border-radius: var(--radius-md);
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--color-border-subtle);
+}
+
+.auth-toggle-btn {
+    flex: 1;
+    padding: 0.6rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: transparent;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.auth-toggle-btn.active {
+    background: var(--color-primary);
+    color: var(--color-bg-base);
+    box-shadow: 0 4px 12px rgba(96, 165, 250, 0.2);
+}
+
+body.theme-light .auth-toggle-btn.active {
+    color: #ffffff;
+}
+
+.nav-icon-btn.logged-in {
+    color: var(--color-primary);
+    background-color: rgba(96, 165, 250, 0.1);
+    border: 1px solid var(--color-primary);
+}
+
+body.theme-light .nav-icon-btn.logged-in {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* --- Landing App Preview Carousel --- */
+.preview-carousel-wrapper {
+    max-width: 900px;
+    margin: 0 auto 3rem auto;
+    position: relative;
+    padding: 0 1rem;
+}
+
+.preview-scroll-container {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 1.5rem;
+    padding: 1rem 0;
+    /* Hide scrollbar for Firefox */
+    scrollbar-width: none;
+    /* Hide scrollbar for IE/Edge */
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Hide scrollbar for Chrome/Safari/Opera */
+.preview-scroll-container::-webkit-scrollbar {
+    display: none;
+}
+
+.preview-scroll-card {
+    flex: 0 0 100%;
+    scroll-snap-align: center;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
+    background: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.preview-scroll-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+}
+
+/* Indicators */
+.carousel-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 1.5rem;
+}
+
+.indicator-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.indicator-dot.active {
+    background: var(--color-primary);
+    transform: scale(1.25);
 }

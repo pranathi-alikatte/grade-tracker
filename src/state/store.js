@@ -20,6 +20,9 @@ export const BACKUP_KEY = 'gymnase_vaud_state_backup';
 
 export let state = {
     studentName: 'Étudiant',
+    studentEmail: '',
+    studentMobile: '',
+    isLoggedIn: false,
     currentYear: 1,
     currentSemester: 'sem1',
     subjectsYear1: [],
@@ -90,6 +93,9 @@ function resetStateToDefault() {
     state = {
         schemaVersion: CURRENT_SCHEMA_VERSION,
         studentName: 'Étudiant',
+        studentEmail: '',
+        studentMobile: '',
+        isLoggedIn: false,
         currentYear: 1,
         currentSemester: 'sem1',
         subjectsYear1: JSON.parse(JSON.stringify(defaultSubjectsYear1)),
@@ -112,6 +118,22 @@ function resetStateToDefault() {
 
 function saveState() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    if (state.isLoggedIn && state.studentEmail) {
+        try {
+            const REG_STUDENTS_KEY = 'notare_registered_students';
+            const students = JSON.parse(localStorage.getItem(REG_STUDENTS_KEY) || '[]');
+            const index = students.findIndex(s => s.email.toLowerCase() === state.studentEmail.toLowerCase());
+            if (index >= 0) {
+                students[index].name = state.studentName;
+                students[index].dob = state.studentDob;
+                students[index].mobile = state.studentMobile;
+                students[index].state = JSON.parse(JSON.stringify(state));
+                localStorage.setItem(REG_STUDENTS_KEY, JSON.stringify(students));
+            }
+        } catch (e) {
+            console.error("Error syncing state to simulated database:", e);
+        }
+    }
 }
 
 /**

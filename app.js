@@ -2,7 +2,7 @@
  * GradeVibe Vaud - PWA App Logic & Customizations v3
  */
 
-import { state, loadState, saveState, resetStateToDefault, migrateSubjectGrades, getBaseYear, getCurrentSubjects, isCurrentYearLocked } from './src/state/store.js';
+import { state, loadState, saveState, resetStateToDefault, replaceState, migrateSubjectGrades, getBaseYear, getCurrentSubjects, isCurrentYearLocked } from './src/state/store.js';
 import { defaultSubjectsYear1, defaultSubjectsYear2, defaultSubjectsYear3 } from './src/state/defaults.js';
 import { storePhoto, getPhoto, deletePhoto } from './src/state/photos.js';
 import { applyTheme } from './src/ui/theme.js';
@@ -1359,11 +1359,9 @@ function getSubjectCardInnerHTML(subject, sem) {
     // Target status
     let targetStatusHTML = '';
     if (avgRaw !== null) {
-        const isTargetMet = avgRaw >= subject.target;
+        const isTargetMet = avgRounded >= subject.target;
         if (isTargetMet) {
             targetStatusHTML = '<span class="subject-status" style="display:inline-flex; align-items:center; gap:0.25rem;"><svg class="status-icon success" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>Objectif atteint</span>';
-        } else if (avgRounded === 4.0 && subject.target === 4.0) {
-            targetStatusHTML = '<span class="subject-status warning" style="display:inline-flex; align-items:center; gap:0.25rem;"><svg class="status-icon warning" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>Objectif atteint (limite)</span>';
         } else {
             targetStatusHTML = '<span class="subject-status not-reached" style="display:inline-flex; align-items:center; gap:0.25rem;"><svg class="status-icon danger" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>Objectif non atteint</span>';
         }
@@ -2142,7 +2140,9 @@ const gradeDetailsModal = document.getElementById('grade-details-modal');
 const detailGradeName = document.getElementById('detail-grade-name');
 const detailGradeValue = document.getElementById('detail-grade-value');
 const detailGradeType = document.getElementById('detail-grade-type');
-const detailGradeDate = document.getElementById('detail-grade-date');
+const detailGradeCreated = document.getElementById('detail-grade-created');
+const detailExamDateContainer = document.getElementById('detail-exam-date-container');
+const detailGradeExamDate = document.getElementById('detail-grade-exam-date');
 const deleteDetailGradeBtn = document.getElementById('delete-detail-grade-btn');
 const detailCommentContainer = document.getElementById('detail-comment-container');
 const detailGradeComment = document.getElementById('detail-grade-comment');
@@ -2671,8 +2671,34 @@ function handleSubjectInteractionClick(e) {
                 detailGradeName.textContent = gradeObj.name || 'Évaluation';
                 detailGradeValue.textContent = gradeObj.value.toFixed(1);
                 detailGradeType.textContent = gradeObj.type === 'TA' ? 'TA' : 'TS';
-                const dateStr = gradeObj.date ? new Date(gradeObj.date).toLocaleDateString('fr-CH', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Non spécifiée';
-                detailGradeDate.textContent = dateStr;
+                // Get the creation date of the grade
+                let createdDate = null;
+                if (gradeObj.createdAt) {
+                    createdDate = new Date(gradeObj.createdAt);
+                } else {
+                    const match = /^grade_(\d{12,14})(_|$)/.exec(gradeObj.id || '');
+                    if (match) {
+                        createdDate = new Date(Number(match[1]));
+                    } else if (gradeObj.date) {
+                        createdDate = new Date(gradeObj.date);
+                    }
+                }
+                
+                if (detailGradeCreated) {
+                    detailGradeCreated.textContent = createdDate 
+                        ? createdDate.toLocaleDateString('fr-CH', { day: 'numeric', month: 'long', year: 'numeric' })
+                        : 'Inconnue';
+                }
+
+                // Get and display the exam date if present
+                if (detailExamDateContainer && detailGradeExamDate) {
+                    if (gradeObj.date) {
+                        detailGradeExamDate.textContent = new Date(gradeObj.date).toLocaleDateString('fr-CH', { day: 'numeric', month: 'long', year: 'numeric' });
+                        detailExamDateContainer.style.display = 'flex';
+                    } else {
+                        detailExamDateContainer.style.display = 'none';
+                    }
+                }
 
                 // Load comments
                 detailCommentContainer.style.display = 'none';
@@ -3029,6 +3055,7 @@ document.getElementById('add-grade-form').addEventListener('submit', (e) => {
                     value,
                     type,
                     date: dateVal ? new Date(dateVal).toISOString() : null,
+                    createdAt: new Date().toISOString(),
                     comment: commentVal,
                     hasPhoto: !!currentUploadedPhotoBase64
                 };
@@ -3149,8 +3176,70 @@ function switchView(viewId) {
     window.scrollTo({ top: 0, behavior: 'instant' });
 }
 
+// --- User Profile & Database Simulation Helpers ---
+const REG_STUDENTS_KEY = 'notare_registered_students';
+
+function getRegisteredStudents() {
+    try {
+        return JSON.parse(localStorage.getItem(REG_STUDENTS_KEY) || '[]');
+    } catch (e) {
+        return [];
+    }
+}
+
+function saveRegisteredStudent(studentProfile, studentState) {
+    const students = getRegisteredStudents();
+    const index = students.findIndex(s => s.email.toLowerCase() === studentProfile.email.toLowerCase());
+    const stateCopy = JSON.parse(JSON.stringify(studentState));
+    
+    const record = {
+        name: studentProfile.name,
+        email: studentProfile.email,
+        mobile: studentProfile.mobile,
+        state: stateCopy
+    };
+    
+    if (index >= 0) {
+        students[index] = record;
+    } else {
+        students.push(record);
+    }
+    localStorage.setItem(REG_STUDENTS_KEY, JSON.stringify(students));
+}
+
+function findRegisteredStudent(email) {
+    const students = getRegisteredStudents();
+    return students.find(s => s.email.toLowerCase() === email.toLowerCase());
+}
+
+function updateProfileUI() {
+    const btnProfile = document.getElementById('btn-profile-modal');
+    if (btnProfile) {
+        btnProfile.classList.toggle('logged-in', !!state.isLoggedIn);
+        if (state.isLoggedIn) {
+            btnProfile.title = `Mon Compte (${state.studentName})`;
+        } else {
+            btnProfile.title = "Espace Étudiant (Non connecté)";
+        }
+    }
+    
+    const studentNameEl = document.getElementById('student-name');
+    if (studentNameEl && studentNameEl.textContent !== state.studentName) {
+        studentNameEl.textContent = state.studentName;
+    }
+
+    const profileName = document.getElementById('profile-display-name');
+    const profileEmail = document.getElementById('profile-display-email');
+    const profileMobile = document.getElementById('profile-display-mobile');
+
+    if (profileName) profileName.textContent = state.studentName || 'Étudiant';
+    if (profileEmail) profileEmail.textContent = state.studentEmail || '-';
+    if (profileMobile) profileMobile.textContent = state.studentMobile || '-';
+}
+
 function init() {
     loadState();
+    updateProfileUI();
     initBackgroundBoxes();
     initBackupUI();
     
@@ -3471,24 +3560,148 @@ function init() {
         }
     });
 
-    // Live date and clock updater
-    function updateClock() {
-        const timeEl = document.getElementById('live-time');
-        const dateEl = document.getElementById('live-date');
-        if (!timeEl || !dateEl) return;
-        const now = new Date();
-        const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const weekday = weekdays[now.getDay()];
-        const month = months[now.getMonth()];
-        const date = now.getDate();
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        timeEl.textContent = `${hours}:${minutes}`;
-        dateEl.textContent = `${weekday} ${month} ${date}`;
+    // --- User Sign-In & Profile Modal Event Bindings ---
+    const btnProfile = document.getElementById('btn-profile-modal');
+    const authModal = document.getElementById('auth-modal');
+    const profileModal = document.getElementById('profile-modal');
+    const landingSigninBtn = document.getElementById('landing-signin-btn');
+
+    const authToggleSignup = document.getElementById('auth-toggle-signup');
+    const authToggleSignin = document.getElementById('auth-toggle-signin');
+    const signupForm = document.getElementById('auth-signup-form');
+    const signinForm = document.getElementById('auth-signin-form');
+
+    const closeAuthBtn = document.getElementById('close-auth-modal');
+    const closeProfileBtn = document.getElementById('close-profile-modal');
+    const logoutBtn = document.getElementById('profile-logout-btn');
+
+    // Open profile or auth modal
+    if (btnProfile) {
+        btnProfile.addEventListener('click', () => {
+            if (state.isLoggedIn) {
+                openModal(profileModal);
+            } else {
+                openModal(authModal);
+            }
+        });
     }
-    updateClock();
-    setInterval(updateClock, 1000);
+
+    if (landingSigninBtn) {
+        landingSigninBtn.addEventListener('click', () => {
+            if (authToggleSignin) authToggleSignin.click();
+            openModal(authModal);
+        });
+    }
+
+    // Toggle S'inscrire / Se connecter forms
+    if (authToggleSignup && authToggleSignin && signupForm && signinForm) {
+        authToggleSignup.addEventListener('click', () => {
+            authToggleSignup.classList.add('active');
+            authToggleSignin.classList.remove('active');
+            signupForm.style.display = 'flex';
+            signinForm.style.display = 'none';
+        });
+
+        authToggleSignin.addEventListener('click', () => {
+            authToggleSignin.classList.add('active');
+            authToggleSignup.classList.remove('active');
+            signinForm.style.display = 'flex';
+            signupForm.style.display = 'none';
+        });
+    }
+
+    // Close buttons
+    if (closeAuthBtn) {
+        closeAuthBtn.addEventListener('click', () => closeModal(authModal));
+    }
+    if (closeProfileBtn) {
+        closeProfileBtn.addEventListener('click', () => closeModal(profileModal));
+    }
+
+    // Sign Up form submission
+    if (signupForm) {
+        signupForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('signup-name').value.trim();
+            const email = document.getElementById('signup-email').value.trim();
+            const mobile = document.getElementById('signup-mobile').value.trim();
+
+            if (!name || !email || !mobile) {
+                showSidebarToast("Veuillez remplir tous les champs.", "error");
+                return;
+            }
+
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showSidebarToast("Format d'adresse e-mail invalide.", "error");
+                return;
+            }
+
+            if (!/^\+?[0-9\s\-()]{9,}$/.test(mobile)) {
+                showSidebarToast("Format de numéro mobile invalide.", "error");
+                return;
+            }
+
+            state.studentName = name;
+            state.studentEmail = email;
+            state.studentMobile = mobile;
+            state.isLoggedIn = true;
+
+            saveRegisteredStudent({ name, email, mobile }, state);
+            saveState();
+
+            closeModal(authModal);
+            updateProfileUI();
+            
+            renderSubjects();
+            updateDashboard();
+
+            showSidebarToast(`Bienvenue, ${name} ! Votre compte a été créé.`, "success");
+        });
+    }
+
+    // Sign In form submission
+    if (signinForm) {
+        signinForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('signin-email').value.trim();
+
+            if (!email) {
+                showSidebarToast("Veuillez entrer votre adresse e-mail.", "error");
+                return;
+            }
+
+            const registered = findRegisteredStudent(email);
+            if (registered) {
+                const savedState = registered.state;
+                savedState.isLoggedIn = true;
+                savedState.studentName = registered.name;
+                savedState.studentEmail = registered.email;
+                savedState.studentMobile = registered.mobile;
+
+                replaceState(savedState);
+                closeModal(authModal);
+
+                location.reload();
+            } else {
+                showSidebarToast("Aucun compte trouvé avec cet e-mail. Veuillez vous inscrire.", "error");
+            }
+        });
+    }
+
+    // Log out action
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            state.isLoggedIn = false;
+            state.studentName = 'Étudiant';
+            state.studentEmail = '';
+            state.studentMobile = '';
+
+            resetStateToDefault();
+            closeModal(profileModal);
+
+            location.reload();
+        });
+    }
 }
 
 

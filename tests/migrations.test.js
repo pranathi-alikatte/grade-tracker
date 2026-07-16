@@ -136,6 +136,31 @@ describe('normalizeState', () => {
         expect(s.settings.sounds).toBe(false);
         expect(s.settings.roasts).toBe(true);
     });
+
+    it('sets profile defaults if missing', () => {
+        const stateObj = { studentName: 'Test' };
+        normalizeState(stateObj);
+        expect(stateObj.studentEmail).toBe('');
+        expect(stateObj.studentMobile).toBe('');
+        expect(stateObj.isLoggedIn).toBe(false);
+    });
+});
+
+describe('runMigrations (v6 → v7)', () => {
+    it('populates studentEmail, studentMobile, and isLoggedIn', () => {
+        const stateObj = {
+            schemaVersion: 6,
+            studentName: 'Marc',
+            subjectsYear1: [],
+            subjectsYear2: [],
+            subjectsYear3: []
+        };
+        runMigrations(stateObj);
+        expect(stateObj.schemaVersion).toBe(7);
+        expect(stateObj.studentEmail).toBe('');
+        expect(stateObj.studentMobile).toBe('');
+        expect(stateObj.isLoggedIn).toBe(false);
+    });
 });
 
 describe('isValidStateShape', () => {

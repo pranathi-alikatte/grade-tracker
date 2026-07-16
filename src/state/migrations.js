@@ -10,7 +10,7 @@
 
 import { defaultSubjectsYear1, defaultSubjectsYear2, defaultSubjectsYear3 } from './defaults.js';
 
-export const CURRENT_SCHEMA_VERSION = 6;
+export const CURRENT_SCHEMA_VERSION = 7;
 
 export const DEFAULT_SETTINGS = {
     sounds: true,
@@ -47,6 +47,9 @@ function allSubjectLists(state) {
 /** Idempotent normalization, runs on every load. */
 export function normalizeState(state) {
     if (!state.studentName) state.studentName = 'Étudiant';
+    if (!state.studentEmail) state.studentEmail = '';
+    if (!state.studentMobile) state.studentMobile = '';
+    if (state.isLoggedIn === undefined) state.isLoggedIn = false;
     if (!state.currentYear) state.currentYear = 1;
     if (!state.currentSemester) state.currentSemester = 'sem1';
     if (!state.theme) state.theme = 'navy';
@@ -128,8 +131,18 @@ function upgradeToV6(state) {
     }));
 }
 
+/**
+ * v7: add studentDob, studentEmail, studentMobile, and isLoggedIn for sign-in.
+ */
+function upgradeToV7(state) {
+    state.studentEmail = state.studentEmail || '';
+    state.studentMobile = state.studentMobile || '';
+    if (state.isLoggedIn === undefined) state.isLoggedIn = false;
+}
+
 const MIGRATIONS = [
-    { to: 6, up: upgradeToV6 }
+    { to: 6, up: upgradeToV6 },
+    { to: 7, up: upgradeToV7 }
 ];
 
 /** Applies pending one-shot migrations. Blobs without a version are v5. */

@@ -46,26 +46,20 @@
 
     <!-- Persistent Top Navigation Bar -->
     <nav class="top-nav-bar">
-        <div class="top-nav-brand" id="brand-logo-link" style="cursor: pointer; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; transition: opacity var(--transition-fast);" title="Retour à l'accueil">
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="url(#notare-icon-gradient)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 2px 8px color-mix(in srgb, var(--color-primary) 30%, transparent));">
-                    <defs>
-                        <linearGradient id="notare-icon-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="var(--color-primary)" />
-                            <stop offset="50%" stop-color="#a78bfa" />
-                            <stop offset="100%" stop-color="#f472b6" />
-                        </linearGradient>
-                    </defs>
-                    <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/>
-                    <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/>
-                    <path d="M21.5 12v6"/>
-                </svg>
-                <strong style="font-size: 1.9rem; letter-spacing: -0.04em; font-weight: 900; background: linear-gradient(135deg, var(--color-primary) 0%, #a78bfa 50%, #f472b6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; display: inline-block; line-height: 1.1;">Notare</strong>
-            </div>
-            <div style="display: flex; flex-direction: column; align-items: flex-start; margin-left: 2.4rem; margin-top: 4px; gap: 2px;">
-                <span id="live-time" style="font-size: 1.6rem; font-weight: 900; color: var(--color-text-primary); font-family: var(--font-family-mono); letter-spacing: -0.03em; line-height: 1; text-shadow: 0 0 10px color-mix(in srgb, var(--color-primary) 40%, transparent);"></span>
-                <span id="live-date" style="font-size: 0.68rem; color: var(--color-text-secondary); font-family: var(--font-family-mono); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 700;"></span>
-            </div>
+        <div class="top-nav-brand" id="brand-logo-link" style="cursor: pointer; transition: opacity var(--transition-fast);" title="Retour à l'accueil">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 2px 8px color-mix(in srgb, var(--color-primary) 10%, transparent));">
+                <defs>
+                    <linearGradient id="notare-icon-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="var(--color-primary)" />
+                        <stop offset="50%" stop-color="#a78bfa" />
+                        <stop offset="100%" stop-color="#f472b6" />
+                    </linearGradient>
+                </defs>
+                <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/>
+                <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/>
+                <path d="M21.5 12v6"/>
+            </svg>
+            <strong style="font-family: 'Playfair Display', Georgia, serif; font-size: 1.7rem; font-weight: 700; letter-spacing: -0.02em; color: var(--color-text-primary); display: inline-block; line-height: 1.1;">notare</strong>
         </div>
         
         <div class="nav-tabs">
@@ -80,6 +74,9 @@
         </div>
 
         <div class="nav-icons">
+            <button id="btn-profile-modal" class="nav-icon-btn" title="Espace Étudiant">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </button>
             <button id="btn-settings-modal" class="nav-icon-btn" title="Paramètres d'affichage">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             </button>
@@ -95,18 +92,25 @@
                 <div class="landing-logo-circle">
                     <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"/><path d="M21.5 12v6"/></svg>
                 </div>
-                <h1 class="landing-title">Notare</h1>
-                <p style="font-size: 0.9rem; color: var(--color-text-secondary); margin-top: -1rem; margin-bottom: 1.5rem; font-style: italic; opacity: 0.8; max-width: 600px; text-align: center; margin-left: auto; margin-right: auto;">
-                    Notare (en latin, signifie "marquer, noter", ce qui symbolise le cœur de cette application : vous aider à noter vos notes)
-                </p>
-                <p class="landing-tagline">
-                    Prenez le contrôle de votre parcours scolaire. Calculez vos moyennes, suivez vos points de promotion et simulez vos cibles en toute simplicité.
-                </p>
-
-                <button type="button" class="btn btn-primary landing-hero-cta" onclick="document.getElementById('tab-nav-dashboard').click()" style="margin-top: 2.25rem; padding: 0.9rem 2rem; font-size: 1rem; gap: 0.6rem;">
-                    Commencer
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                </button>
+                <div class="landing-definition-container" style="margin: 0 auto 3rem auto; max-width: 600px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.25rem;">
+                    <h1 class="landing-title" style="font-family: 'Playfair Display', Georgia, serif; font-size: clamp(3.5rem, 8vw, 4.5rem); font-weight: 400; color: var(--color-text-primary); line-height: 1; letter-spacing: -0.01em; margin-bottom: 0px; background: none; -webkit-text-fill-color: initial; -webkit-background-clip: unset;">notare</h1>
+                    <div style="font-family: var(--font-family-sans); font-size: 1.05rem; color: var(--color-text-primary); font-weight: 300; margin: 0;">
+                        <span style="color: var(--color-text-secondary);">[noˈta.re]</span> <strong style="font-weight: 700; margin-left: 0.2rem;">verbe</strong>
+                    </div>
+                    <p style="font-family: 'Playfair Display', Georgia, serif; font-size: clamp(0.85rem, 2vw, 1rem); color: var(--color-text-secondary); line-height: 1.5; max-width: 480px; margin: 0.25rem auto 0 auto; font-style: normal;">
+                        marquer, noter ; symbolise le cœur de cette application : vous aider à noter vos notes.
+                    </p>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: center; flex-wrap: wrap;">
+                    <button type="button" class="btn btn-primary landing-hero-cta" onclick="document.getElementById('tab-nav-dashboard').click()" style="padding: 0.9rem 2rem; font-size: 1rem; gap: 0.6rem; margin-top: 0;">
+                        Commencer
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </button>
+                    <button type="button" id="landing-signin-btn" class="btn btn-secondary landing-hero-cta" style="padding: 0.9rem 2rem; font-size: 1rem; gap: 0.6rem; margin-top: 0;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        Se connecter
+                    </button>
+                </div>
             </div>
 
             <!-- Animated Scroll Down Indicator -->
@@ -159,78 +163,88 @@
             </div>
         </section>
 
-        <!-- SECTION 3: PROMOTION RULES DEEP DIVE -->
-        <section id="landing-rules" class="landing-section" style="border-top: 1px solid rgba(255, 255, 255, 0.05);">
+        <!-- SECTION 3: APPS VISUAL PREVIEW CAROUSEL -->
+        <section id="landing-rules" class="landing-section" style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding-bottom: 4rem;">
             <div style="text-align: center; margin-bottom: 3rem;">
-                <h2 style="font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 800; color: white; letter-spacing: -0.02em; margin-bottom: 1rem;">Les 4 Règles de Promotion</h2>
+                <h2 style="font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 800; color: white; letter-spacing: -0.02em; margin-bottom: 1rem;">Interface Intelligente</h2>
                 <p style="color: var(--color-text-secondary); max-width: 600px; margin: 0 auto; font-size: 0.95rem;">
-                    Notare intègre à 100% les exigences du Gymnase vaudois pour déterminer votre réussite.
+                    Découvrez les fonctionnalités de Notare en faisant glisser ou défiler les captures d'écran ci-dessous.
                 </p>
             </div>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; max-width: 1100px; margin: 0 auto 3rem auto; width: 100%;">
-                <!-- Rule 1 -->
-                <div style="background: rgba(0,0,0,0.2); border-left: 4px solid var(--color-primary); padding: 1.5rem; border-radius: var(--radius-md);">
-                    <h3 style="font-size: 1.1rem; color: white; font-weight: 800; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="font-size: 1.25rem;">①</span> Points Groupes 1 & 2
-                    </h3>
-                    <p style="font-size: 0.8rem; color: var(--color-text-secondary); line-height: 1.5; margin: 0;">
-                        Obtenir au minimum 16.0 points dans le Groupe 1 (branches fondamentales) et un total suffisant dans le Groupe 2.
-                    </p>
+            <div class="preview-carousel-wrapper">
+                <!-- Scrollable Container -->
+                <div class="preview-scroll-container" id="preview-scroll-container">
+                    
+                    <!-- Card 1: Dashboard -->
+                    <div class="preview-scroll-card">
+                        <img src="./assets/preview-dashboard.png" alt="Tableau de bord de Notare" class="preview-scroll-image" loading="lazy">
+                    </div>
+
+                    <!-- Card 2: Evolution -->
+                    <div class="preview-scroll-card">
+                        <img src="./assets/preview-evolution.png" alt="Graphique d'évolution générale de Notare" class="preview-scroll-image" loading="lazy">
+                    </div>
+
+                    <!-- Card 3: Settings -->
+                    <div class="preview-scroll-card">
+                        <img src="./assets/preview-settings.png" alt="Paramètres de Notare" class="preview-scroll-image" loading="lazy">
+                    </div>
+
                 </div>
-                <!-- Rule 2 -->
-                <div style="background: rgba(0,0,0,0.2); border-left: 4px solid #f59e0b; padding: 1.5rem; border-radius: var(--radius-md);">
-                    <h3 style="font-size: 1.1rem; color: white; font-weight: 800; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="font-size: 1.25rem; color: #f59e0b;">②</span> Max 4 Insuffisances
-                    </h3>
-                    <p style="font-size: 0.8rem; color: var(--color-text-secondary); line-height: 1.5; margin: 0;">
-                        Vous ne pouvez pas avoir plus de 4 branches avec une moyenne annuelle inférieure à 4.0.
-                    </p>
-                </div>
-                <!-- Rule 3 -->
-                <div style="background: rgba(0,0,0,0.2); border-left: 4px solid #10b981; padding: 1.5rem; border-radius: var(--radius-md);">
-                    <h3 style="font-size: 1.1rem; color: white; font-weight: 800; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="font-size: 1.25rem; color: #10b981;">③</span> Bilan des points >= 0 (3M)
-                    </h3>
-                    <p style="font-size: 0.8rem; color: var(--color-text-secondary); line-height: 1.5; margin: 0;">
-                        Règle de la <strong>double compensation</strong> pour les filières gymnasiales en 3 ans (3M). La somme des écarts doit être positive, les insuffisances comptant double.
-                    </p>
-                </div>
-                <!-- Rule 4 -->
-                <div style="background: rgba(0,0,0,0.2); border-left: 4px solid #8b5cf6; padding: 1.5rem; border-radius: var(--radius-md);">
-                    <h3 style="font-size: 1.1rem; color: white; font-weight: 800; margin: 0 0 0.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="font-size: 1.25rem; color: #a78bfa;">④</span> Moyenne Générale >= 4.0 (3M)
-                    </h3>
-                    <p style="font-size: 0.8rem; color: var(--color-text-secondary); line-height: 1.5; margin: 0;">
-                        La moyenne générale arithmétique doit être d'au moins 4.0. Concerne uniquement les filières gymnasiales en 3 ans (3M) aux semestres 1 et 2.
-                    </p>
+
+                <!-- Scroll Indicators -->
+                <div class="carousel-indicators" id="carousel-indicators">
+                    <span class="indicator-dot active" onclick="scrollToCard(0)"></span>
+                    <span class="indicator-dot" onclick="scrollToCard(1)"></span>
+                    <span class="indicator-dot" onclick="scrollToCard(2)"></span>
                 </div>
             </div>
 
-            <!-- Double Gap Explainer Box -->
-            <div style="background-color: rgba(96, 165, 250, 0.03); border: 1px dashed rgba(96, 165, 250, 0.2); padding: 1.5rem; border-radius: var(--radius-lg); max-width: 800px; margin: 0 auto; width: 100%;">
-                <h4 style="font-size: 1rem; color: white; font-weight: 800; margin: 0 0 0.75rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-                    Comprendre le doublement des écarts négatifs
-                </h4>
-                <p style="font-size: 0.85rem; color: var(--color-text-secondary); line-height: 1.5; margin: 0 0 1rem 0;">
-                    Pour encourager la régularité, le règlement du Gymnase pénalise lourdement les faiblesses. Chaque demi-point en dessous de 4.0 requiert un point entier au-dessus de 4.0 pour être compensé :
-                </p>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; font-size: 0.8rem; font-family: var(--font-family-mono);">
-                    <div style="background: rgba(16, 185, 129, 0.05); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid rgba(16, 185, 129, 0.1); text-align: center;">
-                        Moyenne <span style="color: #10b981; font-weight: bold;">5.0</span> (+1.0) <br>
-                        ➔ <span style="color: #10b981; font-weight: bold;">+1.0 pt</span> de bilan
-                    </div>
-                    <div style="background: rgba(239, 68, 68, 0.05); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid rgba(239, 68, 68, 0.1); text-align: center;">
-                        Moyenne <span style="color: #ef4444; font-weight: bold;">3.5</span> (-0.5) <br>
-                        ➔ <span style="color: #ef4444; font-weight: bold;">-1.0 pt</span> (doublé !)
-                    </div>
-                    <div style="background: rgba(239, 68, 68, 0.05); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid rgba(239, 68, 68, 0.1); text-align: center;">
-                        Moyenne <span style="color: #ef4444; font-weight: bold;">3.0</span> (-1.0) <br>
-                        ➔ <span style="color: #ef4444; font-weight: bold;">-2.0 pts</span> (doublé !)
-                    </div>
-                </div>
-            </div>
+            <!-- Interactive Dot Indicators Script -->
+            <script>
+                const container = document.getElementById('preview-scroll-container');
+                const dots = document.querySelectorAll('#carousel-indicators .indicator-dot');
+
+                function scrollToCard(index) {
+                    if (!container) return;
+                    const cards = container.querySelectorAll('.preview-scroll-card');
+                    if (cards[index]) {
+                        container.scrollTo({
+                            left: cards[index].offsetLeft - container.offsetLeft,
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+
+                // Update active indicator dot on scroll
+                if (container) {
+                    container.addEventListener('scroll', () => {
+                        const cards = container.querySelectorAll('.preview-scroll-card');
+                        const containerCenter = container.scrollLeft + (container.clientWidth / 2);
+                        
+                        let activeIndex = 0;
+                        let minDistance = Infinity;
+
+                        cards.forEach((card, index) => {
+                            const cardCenter = card.offsetLeft - container.offsetLeft + (card.clientWidth / 2);
+                            const distance = Math.abs(cardCenter - containerCenter);
+                            if (distance < minDistance) {
+                                minDistance = distance;
+                                activeIndex = index;
+                            }
+                        });
+
+                        dots.forEach((dot, index) => {
+                            if (index === activeIndex) {
+                                dot.classList.add('active');
+                            } else {
+                                dot.classList.remove('active');
+                            }
+                        });
+                    });
+                }
+            </script>
         </section>
 
         <!-- SECTION 4: ABOUT & MOT DE L'AUTEUR -->
@@ -267,7 +281,7 @@
             <!-- Header -->
             <header class="header">
                 <div class="header-left" style="gap: 0.6rem;">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="url(#notare-dashboard-icon-gradient)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 2px 8px color-mix(in srgb, var(--color-primary) 30%, transparent)); flex-shrink: 0;">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 2px 8px color-mix(in srgb, var(--color-primary) 10%, transparent)); flex-shrink: 0;">
                         <defs>
                             <linearGradient id="notare-dashboard-icon-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
                                 <stop offset="0%" stop-color="var(--color-primary)" />
@@ -540,9 +554,13 @@
                     <span style="color: var(--color-text-secondary);">Type:</span>
                     <strong id="detail-grade-type" style="color: white;">—</strong>
                 </div>
-                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.25rem;">
+                <div id="detail-exam-date-container" style="display: none; justify-content: space-between; font-size: 0.9rem;">
+                    <span style="color: var(--color-text-secondary);">Date de l'examen:</span>
+                    <strong id="detail-grade-exam-date" style="color: white;">—</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
                     <span style="color: var(--color-text-secondary);">Date d'ajout:</span>
-                    <span id="detail-grade-date" style="color: var(--color-text-muted);">—</span>
+                    <strong id="detail-grade-created" style="color: white;">—</strong>
                 </div>
                 
                 <!-- Comment Container -->
@@ -654,7 +672,7 @@
     <!-- Dedicated Visual Guide Page View -->
     <div id="view-guide" class="page-view guide-page-container" style="display: none;">
         <div class="guide-header">
-            <h1 class="guide-page-title">Guide de Promotion & d'Utilisation</h1>
+            <h1 class="guide-page-title">Guide de Promotion et d'Utilisation</h1>
         </div>
 
         <div class="guide-content-grid">
@@ -671,7 +689,7 @@
                         <div class="rule-status-check" style="margin-top: 0.25rem;">✓</div>
                         <div class="rule-details" style="display: flex; flex-direction: column; justify-content: space-between; flex-grow: 1; height: 100%;">
                             <div>
-                                <h3 style="margin-top: 0;">1. Points des Groupes 1 & 2</h3>
+                                <h3 style="margin-top: 0;">1. Points des Groupes 1 et 2</h3>
                                 <p style="font-size: 0.8rem; color: var(--color-text-secondary); margin-bottom: 0.5rem;">Au moins 16.0 points dans le Groupe 1 et total suffisant dans le Groupe 2.</p>
                             </div>
                             <span style="display:inline-block; font-size: 0.7rem; background: rgba(96,165,250,0.15); color: var(--color-primary); padding: 2px 6px; border-radius: 4px; font-weight: bold; align-self: flex-start; margin-top: auto;">Éliminatoire si insuffisant</span>
@@ -691,8 +709,8 @@
                         <div class="rule-status-check" style="margin-top: 0.25rem;">✓</div>
                         <div class="rule-details" style="display: flex; flex-direction: column; justify-content: space-between; flex-grow: 1; height: 100%;">
                             <div>
-                                <h3 style="margin-top: 0;">3. Bilan des Points (Maturité 3M)</h3>
-                                <p style="font-size: 0.8rem; color: var(--color-text-secondary); margin-bottom: 0.5rem;">Somme des écarts : règle de la <strong>double compensation</strong> (les notes inférieures à 4.0 comptent négativement et sont doublées). Concerne uniquement la filière gymnasiale en 3 ans (3M).</p>
+                                <h3 style="margin-top: 0;">3. Bilan des Points (3M)</h3>
+                                <p style="font-size: 0.8rem; color: var(--color-text-secondary); margin-bottom: 0.5rem;">Règle de la double compensation (les notes en dessous de 4.0 comptent double). Concerne la filière 3M.</p>
                             </div>
                             <span style="display:inline-block; font-size: 0.7rem; background: rgba(16,185,129,0.15); color: #10b981; padding: 2px 6px; border-radius: 4px; font-weight: bold; align-self: flex-start; margin-top: auto;">Éliminatoire si &lt; 0 (3M)</span>
                         </div>
@@ -701,8 +719,8 @@
                         <div class="rule-status-check" style="margin-top: 0.25rem;">✓</div>
                         <div class="rule-details" style="display: flex; flex-direction: column; justify-content: space-between; flex-grow: 1; height: 100%;">
                             <div>
-                                <h3 style="margin-top: 0;">4. Moyenne Générale >= 4.0 (3M)</h3>
-                                <p style="font-size: 0.8rem; color: var(--color-text-secondary); margin-bottom: 0.5rem;">La moyenne générale arithmétique de l'ensemble des branches doit être supérieure ou égale à 4.0. Concerne uniquement la filière 3M (semestres 1 et 2).</p>
+                                <h3 style="margin-top: 0;">4. Moyenne Générale (3M)</h3>
+                                <p style="font-size: 0.8rem; color: var(--color-text-secondary); margin-bottom: 0.5rem;">La moyenne générale arithmétique de toutes les branches doit être d'au moins 4.0. Concerne la filière 3M.</p>
                             </div>
                             <span style="display:inline-block; font-size: 0.7rem; background: rgba(139,92,246,0.15); color: #a78bfa; padding: 2px 6px; border-radius: 4px; font-weight: bold; align-self: flex-start; margin-top: auto;">Éliminatoire si &lt; 4.0 (3M)</span>
                         </div>
@@ -806,24 +824,24 @@
             <div class="guide-card scanning-guide-card">
                 <h2 class="guide-card-title">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.35rem;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                    Scanner d'examens IA (OCR)
+                    Photo de l'épreuve
                 </h2>
-                <p class="guide-intro">Une preuve photo certifiée pour vos évaluations :</p>
+                <p class="guide-intro">Ajoutez une photo comme justificatif pour vos évaluations :</p>
                 <div class="scanning-steps-visual">
                     <div class="scan-step">
                         <span class="step-num">1</span>
-                        <h5>Capture</h5>
-                        <p>Cliquez sur "Scanner", cadrez votre test, et prenez la capture.</p>
+                        <h5>Prendre une photo</h5>
+                        <p>Cliquez sur "Prendre photo" lors de la saisie d'une note pour ouvrir l'appareil photo.</p>
                     </div>
                     <div class="scan-step">
                         <span class="step-num">2</span>
-                        <h5>Détection</h5>
-                        <p>L'IA Tesseract extrait les chiffres de la photo d'examen.</p>
+                        <h5>Justificatif</h5>
+                        <p>Cadrez votre test et validez la capture pour l'enregistrer avec votre note.</p>
                     </div>
                     <div class="scan-step">
                         <span class="step-num">3</span>
-                        <h5>Validation</h5>
-                        <p>Si la note saisie diffère de l'OCR, une modale de confirmation s'affiche.</p>
+                        <h5>Consultation</h5>
+                        <p>Visualisez la photo de votre test à tout moment directement depuis les détails de la branche.</p>
                     </div>
                 </div>
             </div>
@@ -943,6 +961,95 @@
                     C'est parti !
                 </button>
             </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Connexion / Inscription -->
+    <div class="modal-backdrop" id="auth-modal">
+        <div class="modal-container" style="max-width: 440px; width: 95%;">
+            <button class="modal-close-btn" id="close-auth-modal" aria-label="Fermer la fenêtre">&times;</button>
+            <h2 class="modal-title" id="auth-modal-title" style="margin-bottom: 0.5rem; text-align: center;">Espace Étudiant</h2>
+            <p style="color: var(--color-text-secondary); font-size: 0.8rem; text-align: center; margin-bottom: 1.5rem;" id="auth-modal-subtitle">
+                Sauvegardez vos notes et synchronisez vos appareils en toute sécurité.
+            </p>
+
+            <div class="auth-toggle-container">
+                <button type="button" class="auth-toggle-btn active" id="auth-toggle-signup">S'inscrire</button>
+                <button type="button" class="auth-toggle-btn" id="auth-toggle-signin">Se connecter</button>
+            </div>
+
+            <!-- Inscription Form (S'inscrire) -->
+            <form id="auth-signup-form" style="display: flex; flex-direction: column; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label" for="signup-name" style="font-weight: 700; margin-bottom: 0.4rem; display: block;">Nom et Prénom</label>
+                    <input type="text" id="signup-name" class="form-input" placeholder="ex. Marc Kovacs" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="signup-email" style="font-weight: 700; margin-bottom: 0.4rem; display: block;">Adresse e-mail</label>
+                    <input type="email" id="signup-email" class="form-input" placeholder="ex. marc.kovacs@gymnase.ch" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="signup-mobile" style="font-weight: 700; margin-bottom: 0.4rem; display: block;">Numéro de mobile</label>
+                    <input type="tel" id="signup-mobile" class="form-input" placeholder="ex. +41 79 123 45 67" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.85rem; font-weight: 800; font-size: 1rem; border-radius: var(--radius-md); margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                    Créer mon compte
+                </button>
+            </form>
+
+            <!-- Connexion Form (Se connecter) -->
+            <form id="auth-signin-form" style="display: none; flex-direction: column; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label" for="signin-email" style="font-weight: 700; margin-bottom: 0.4rem; display: block;">Adresse e-mail</label>
+                    <input type="email" id="signin-email" class="form-input" placeholder="ex. marc.kovacs@gymnase.ch" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.85rem; font-weight: 800; font-size: 1rem; border-radius: var(--radius-md); margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                    Se connecter
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: Profil Étudiant / Mon Compte -->
+    <div class="modal-backdrop" id="profile-modal">
+        <div class="modal-container" style="max-width: 440px; width: 95%;">
+            <button class="modal-close-btn" id="close-profile-modal" aria-label="Fermer la fenêtre">&times;</button>
+            <h2 class="modal-title" style="margin-bottom: 0.5rem; text-align: center;">Mon Espace</h2>
+            <p style="color: var(--color-text-secondary); font-size: 0.8rem; text-align: center; margin-bottom: 1.5rem;">
+                Informations du compte et synchronisation.
+            </p>
+
+            <div style="background: var(--color-bg-elevated); border-radius: var(--radius-lg); padding: 1.25rem; border: 1px solid var(--color-border-subtle); display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">
+                <div style="display: flex; flex-direction: column; gap: 0.25rem; text-align: left;">
+                    <span style="font-size: 0.7rem; color: var(--color-text-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Nom & Prénom</span>
+                    <strong id="profile-display-name" style="font-size: 1.1rem; color: var(--color-text-primary);">Étudiant</strong>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 0.25rem; text-align: left;">
+                    <span style="font-size: 0.7rem; color: var(--color-text-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">E-mail</span>
+                    <strong id="profile-display-email" style="font-size: 1.1rem; color: var(--color-text-primary);">-</strong>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 0.25rem; text-align: left;">
+                    <span style="font-size: 0.7rem; color: var(--color-text-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Téléphone mobile</span>
+                    <strong id="profile-display-mobile" style="font-size: 1.1rem; color: var(--color-text-primary);">-</strong>
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 0.75rem; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); padding: 0.75rem 1rem; border-radius: var(--radius-md); margin-bottom: 1.5rem;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                <div style="font-size: 0.8rem; color: var(--color-text-primary); text-align: left;">
+                    Synchronisé avec le cloud <strong>(Supabase)</strong>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <button type="button" id="profile-logout-btn" class="btn btn-secondary" style="width: 100%; padding: 0.85rem; font-weight: 800; font-size: 0.95rem; border-radius: var(--radius-md); border-color: rgba(239, 68, 68, 0.3); color: #f87171;">
+                    Se déconnecter
+                </button>
+            </div>
         </div>
     </div>
 
