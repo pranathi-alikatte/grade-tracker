@@ -4853,9 +4853,10 @@ body.theme-light .nav-icon-btn.logged-in {
 
 .preview-scroll-image {
     width: 100%;
-    height: auto;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    object-position: top;
     display: block;
-    object-fit: contain;
 }
 
 /* Mock Browser Window Shell */
