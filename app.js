@@ -10,6 +10,8 @@ import { escapeHTML } from './src/ui/dom.js';
 import { playConfettiSound, playFahSound, showSidebarToast, startConfetti, initBackgroundBoxes } from './src/ui/effects.js';
 import { verifyGradeInText, compressAndResizeImage, ensureTesseract } from './src/features/ocr.js';
 import { initBackupUI } from './src/features/backup.js';
+import { initNativeIntegration, syncNativeWidget, handleImportFromWeb } from './src/features/native-integration.js';
+import { Capacitor } from '@capacitor/core';
 import './src/features/pwa.js';
 
 // --- OCR and Photo Temporary State ---
@@ -330,6 +332,7 @@ function updateDashboard() {
         
         renderEvolutionGraph();
         updateGroupsBilan();
+        syncNativeWidget(0.0, true, 0);
         return;
     }
 
@@ -386,6 +389,9 @@ function updateDashboard() {
     // Update Bilan lists
     updateGroupsBilan();
     renderEvolutionGraph();
+    
+    // Synchronize to native iOS widget UserDefaults App Group
+    syncNativeWidget(results.overallAverage, results.isPromoted, results.insuffisances);
 }
 
 function updateGroupsBilan() {
@@ -3311,6 +3317,22 @@ function init() {
     updateProfileUI();
     initBackgroundBoxes();
     initBackupUI();
+    
+    // Setup native integrations if on Capacitor iOS/Android
+    initNativeIntegration(() => {
+        const currentSubjects = getCurrentSubjects();
+        const results = checkVaudPromotion(currentSubjects, state.currentSemester);
+        return { results };
+    });
+    
+    // Wire the clipboard import button for native iOS users
+    const clipboardImportBtn = document.getElementById('backup-clipboard-import-btn');
+    if (clipboardImportBtn) {
+        if (Capacitor.isNativePlatform()) {
+            clipboardImportBtn.style.display = 'block';
+            clipboardImportBtn.addEventListener('click', handleImportFromWeb);
+        }
+    }
     
     animateCards = true;
     // View Router on startup: always start on the landing page

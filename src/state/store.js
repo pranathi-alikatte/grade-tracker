@@ -14,9 +14,11 @@ import { defaultSubjectsYear1, defaultSubjectsYear2, defaultSubjectsYear3 } from
 import { normalizeState, runMigrations, isValidStateShape, migrateSubjectGrades, CURRENT_SCHEMA_VERSION, DEFAULT_SETTINGS } from './migrations.js';
 import { applyTheme } from '../ui/theme.js';
 import { showSidebarToast } from '../ui/effects.js';
+import { Preferences } from '@capacitor/preferences';
 
 export const STORAGE_KEY = 'gymnase_vaud_state_v5';
 export const BACKUP_KEY = 'gymnase_vaud_state_backup';
+
 
 export let state = {
     studentName: 'Étudiant',
@@ -116,8 +118,53 @@ function resetStateToDefault() {
     applyTheme();
 }
 
+let isWriting = false;
+let pendingWritePayload = null;
+let pendingProfilesPayload = null;
+
+async function queuePreferencesWrite(data, profilesData = null) {
+    if (typeof window === 'undefined') return;
+    if (data) pendingWritePayload = data;
+    if (profilesData) pendingProfilesPayload = profilesData;
+    if (isWriting) return;
+    
+    isWriting = true;
+    while (pendingWritePayload !== null || pendingProfilesPayload !== null) {
+        if (pendingWritePayload !== null) {
+            const payloadToSave = pendingWritePayload;
+            pendingWritePayload = null;
+            try {
+                await Preferences.set({
+                    key: 'gymnase_vaud_state_v5',
+                    value: JSON.stringify(payloadToSave)
+                });
+            } catch (err) {
+                console.error("Preferences state write failed:", err);
+            }
+        }
+        
+        if (pendingProfilesPayload !== null) {
+            const profilesToSave = pendingProfilesPayload;
+            pendingProfilesPayload = null;
+            try {
+                await Preferences.set({
+                    key: 'notare_registered_students',
+                    value: JSON.stringify(profilesToSave)
+                });
+            } catch (err) {
+                console.error("Preferences profiles write failed:", err);
+            }
+        }
+    }
+    isWriting = false;
+}
+
 function saveState() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    
+    // Sync state backup to preferences
+    queuePreferencesWrite(state);
+    
     if (state.isLoggedIn && state.studentEmail) {
         try {
             const REG_STUDENTS_KEY = 'notare_registered_students';
@@ -129,12 +176,23 @@ function saveState() {
                 students[index].mobile = state.studentMobile;
                 students[index].state = JSON.parse(JSON.stringify(state));
                 localStorage.setItem(REG_STUDENTS_KEY, JSON.stringify(students));
+                
+                // Sync profiles backup to preferences
+                queuePreferencesWrite(null, students);
             }
         } catch (e) {
             console.error("Error syncing state to simulated database:", e);
         }
+    } else {
+        const registered = localStorage.getItem('notare_registered_students');
+        if (registered) {
+            try {
+                queuePreferencesWrite(null, JSON.parse(registered));
+            } catch (e) {}
+        }
     }
 }
+
 
 /**
  * Replaces the whole state (used by backup import). The caller is expected
@@ -174,4 +232,4 @@ function isCurrentYearLocked() {
     return false;
 }
 
-export { migrateSubjectGrades, loadState, resetStateToDefault, saveState, replaceState, getBaseYear, getCurrentSubjects, isCurrentYearLocked };
+export { migrateSubjectGrades, loadState, resetStateToDefault, saveState, replaceState, getBaseYear, getCurrentSubjects, isCurrentYearLocked, queuePreferencesWrite };

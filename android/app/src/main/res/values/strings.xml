@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">GradeVibe Vaud</string>
+    <string name="title_activity_main">GradeVibe Vaud</string>
+    <string name="package_name">com.gradevibe.vaud</string>
+    <string name="custom_url_scheme">com.gradevibe.vaud</string>
+</resources>
